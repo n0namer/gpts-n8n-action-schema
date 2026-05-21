@@ -1,262 +1,469 @@
 openapi: 3.1.0
 info:
-  title: n8n REST Control api
-  version: 1.3.1-mcp-envelope
-  description: Stable OpenAPI schema for ChatGPT Actions via n8n-control. Workflow write responses are tolerant and MCP-like.
+  title: n8n REST Control API
+  version: 1.3.2-gpts-compatible
+  description: Stable OpenAPI schema for ChatGPT Actions via n8n-control. Object schemas include explicit properties for GPT Builder compatibility.
 servers:
   - url: https://n8n-control-production.up.railway.app/api/v1
 security:
   - N8nApiKey: []
+
 paths:
   /debug/ping:
     get:
       operationId: debugPingAuth
+      summary: Debug ping
       x-openai-isConsequential: false
-      responses:
-        "200": { description: OK, content: { application/json: { schema: { type: object, additionalProperties: true } } } }
-  /debug/workflows-min:
-    get:
-      operationId: debugWorkflowsMinAuth
-      x-openai-isConsequential: false
-      responses:
-        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/ListResponse" } } } }
-  /workflows:
-    get:
-      operationId: listWorkflowsMini
-      x-openai-isConsequential: false
-      parameters:
-        - { name: active, in: query, schema: { type: boolean } }
-        - { name: tags, in: query, schema: { type: string } }
-        - { name: name, in: query, schema: { type: string } }
-        - { name: projectId, in: query, schema: { type: string } }
-        - { name: excludePinnedData, in: query, schema: { type: boolean, default: true } }
-        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 10 } }
-        - { name: cursor, in: query, schema: { type: string } }
-      responses:
-        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/ListResponse" } } } }
-    post:
-      operationId: createWorkflow
-      x-openai-isConsequential: true
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: "#/components/schemas/WorkflowRequest" }
       responses:
         "200":
-          description: Created. Accepts MCP-like envelope, raw workflow object, or any JSON object.
+          description: OK
           content:
             application/json:
               schema:
-                oneOf:
-                  - { $ref: "#/components/schemas/WorkflowMutationResponse" }
-                  - { $ref: "#/components/schemas/WorkflowObject" }
-                  - { type: object, additionalProperties: true }
-        "204": { description: Empty write response; verify with follow-up read before accepting. }
+                $ref: "#/components/schemas/DebugPingResponse"
+
+  /debug/workflows-min:
+    get:
+      operationId: debugWorkflowsMinAuth
+      summary: Debug minimal workflow list response
+      x-openai-isConsequential: false
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListResponse"
+
+  /workflows:
+    get:
+      operationId: listWorkflowsMini
+      summary: List workflows
+      x-openai-isConsequential: false
+      parameters:
+        - $ref: "#/components/parameters/Active"
+        - $ref: "#/components/parameters/Tags"
+        - $ref: "#/components/parameters/Name"
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/ExcludePinnedData"
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Cursor"
+      responses:
+        "200":
+          description: Workflows retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListResponse"
+    post:
+      operationId: createWorkflow
+      summary: Create workflow
+      x-openai-isConsequential: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkflowRequest"
+      responses:
+        "200":
+          description: Created. Accepts MCP-like envelope, raw workflow object, or other JSON object.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowWriteResponse"
+        "204":
+          description: Empty write response; verify it with a follow-up read before accepting.
+
   /workflows/{id}:
     get:
       operationId: getWorkflow
+      summary: Get workflow
       x-openai-isConsequential: false
       parameters:
-        - { name: id, in: path, required: true, schema: { type: string, minLength: 1 } }
-        - { name: excludePinnedData, in: query, schema: { type: boolean, default: true } }
+        - $ref: "#/components/parameters/Id"
+        - $ref: "#/components/parameters/ExcludePinnedData"
       responses:
-        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/WorkflowObject" } } } }
+        "200":
+          description: Workflow retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowObject"
     put:
       operationId: updateWorkflow
+      summary: Update workflow
       x-openai-isConsequential: true
       parameters:
-        - { name: id, in: path, required: true, schema: { type: string, minLength: 1 } }
+        - $ref: "#/components/parameters/Id"
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: "#/components/schemas/WorkflowRequest" }
+            schema:
+              $ref: "#/components/schemas/WorkflowRequest"
       responses:
-        "200": { description: Updated, content: { application/json: { schema: { $ref: "#/components/schemas/WorkflowMutationResponse" } } } }
-        "204": { description: Empty update response; verify with getWorkflow. }
+        "200":
+          description: Updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowWriteResponse"
+        "204":
+          description: Empty update response; verify with getWorkflow.
+
   /workflows/{id}/activate:
     post:
       operationId: activateWorkflow
+      summary: Activate workflow
       x-openai-isConsequential: true
       parameters:
-        - { name: id, in: path, required: true, schema: { type: string, minLength: 1 } }
+        - $ref: "#/components/parameters/Id"
       requestBody:
         required: false
         content:
           application/json:
-            schema: { type: object, additionalProperties: true }
+            schema:
+              $ref: "#/components/schemas/ActivateWorkflowRequest"
       responses:
-        "200": { description: Activated, content: { application/json: { schema: { $ref: "#/components/schemas/WorkflowMutationResponse" } } } }
-        "204": { description: Empty activation response; verify with getWorkflow. }
+        "200":
+          description: Activated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowWriteResponse"
+        "204":
+          description: Empty activation response; verify it with getWorkflow.
+
   /workflows/{id}/deactivate:
     post:
       operationId: deactivateWorkflow
+      summary: Deactivate workflow
       x-openai-isConsequential: true
       parameters:
-        - { name: id, in: path, required: true, schema: { type: string, minLength: 1 } }
+        - $ref: "#/components/parameters/Id"
       responses:
-        "200": { description: Deactivated, content: { application/json: { schema: { $ref: "#/components/schemas/WorkflowMutationResponse" } } } }
-        "204": { description: Empty deactivation response; verify with getWorkflow. }
+        "200":
+          description: Deactivated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowWriteResponse"
+        "204":
+          description: Empty deactivation response; verify with getWorkflow.
+
   /executions:
     get:
       operationId: listExecutions
+      summary: List executions
       x-openai-isConsequential: false
       parameters:
-        - { name: includeData, in: query, schema: { type: boolean, default: false } }
-        - { name: status, in: query, schema: { type: string, enum: [canceled, crashed, error, new, running, success, unknown, waiting] } }
-        - { name: workflowId, in: query, schema: { type: string } }
-        - { name: projectId, in: query, schema: { type: string } }
-        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 10 } }
-        - { name: cursor, in: query, schema: { type: string } }
+        - name: includeData
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [canceled, crashed, error, new, running, success, unknown, waiting]
+        - name: workflowId
+          in: query
+          required: false
+          schema:
+            type: string
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Cursor"
       responses:
-        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/ListResponse" } } } }
+        "200":
+          description: Executions retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListResponse"
+
   /executions/{id}:
     get:
       operationId: getExecution
+      summary: Get execution
       x-openai-isConsequential: false
       parameters:
-        - { name: id, in: path, required: true, schema: { type: string } }
-        - { name: includeData, in: query, schema: { type: boolean, default: false } }
+        - $ref: "#/components/parameters/Id"
+        - name: includeData
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
       responses:
-        "200": { description: OK, content: { application/json: { schema: { type: object, additionalProperties: true } } } }
+        "200":
+          description: Execution retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericObject"
+
   /credentials:
     get:
       operationId: listCredentials
+      summary: List credentials metadata
       x-openai-isConsequential: false
       parameters:
-        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 10 } }
-        - { name: cursor, in: query, schema: { type: string } }
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Cursor"
       responses:
-        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/ListResponse" } } } }
+        "200":
+          description: Credentials metadata retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListResponse"
+
   /credentials/{id}:
     get:
       operationId: getCredential
+      summary: Get credential metadata
       x-openai-isConsequential: false
       parameters:
-        - { name: id, in: path, required: true, schema: { type: string } }
+        - $ref: "#/components/parameters/Id"
       responses:
-        "200": { description: OK, content: { application/json: { schema: { type: object, additionalProperties: true } } } }
+        "200":
+          description: Credential metadata retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericObject"
+
   /credentials/schema/{credentialTypeName}:
     get:
       operationId: getCredentialSchema
+      summary: Get credential schema
       x-openai-isConsequential: false
       parameters:
-        - { name: credentialTypeName, in: path, required: true, schema: { type: string } }
+        - name: credentialTypeName
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
       responses:
-        "200": { description: OK, content: { application/json: { schema: { type: object, additionalProperties: true } } } }
+        "200":
+          description: Credential schema retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericObject"
+
   /credentials/{id}/test:
     post:
       operationId: testCredential
+      summary: Test credential
       x-openai-isConsequential: true
       parameters:
-        - { name: id, in: path, required: true, schema: { type: string } }
+        - $ref: "#/components/parameters/Id"
       responses:
-        "200": { description: OK, content: { application/json: { schema: { type: object, additionalProperties: true } } } }
+        "200":
+          description: Credential test completed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericObject"
+
   /audit:
     post:
       operationId: generateAudit
+      summary: Generate n8n audit
       x-openai-isConsequential: false
       requestBody:
         required: false
         content:
           application/json:
-            schema: { type: object, additionalProperties: true }
+            schema:
+              $ref: "#/components/schemas/AuditRequest"
       responses:
-        "200": { description: OK, content: { application/json: { schema: { type: object, additionalProperties: true } } } }
+        "200":
+          description: Audit generated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericObject"
+
   /tags:
     get:
       operationId: listTags
+      summary: List tags
       x-openai-isConsequential: false
       parameters:
-        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 10 } }
-        - { name: cursor, in: query, schema: { type: string } }
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Cursor"
       responses:
-        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/ListResponse" } } } }
+        "200":
+          description: Tags retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListResponse"
     post:
       operationId: createTag
+      summary: Create tag
       x-openai-isConsequential: true
       requestBody:
         required: true
         content:
           application/json:
-            schema: { type: object, required: [name], properties: { name: { type: string, minLength: 1 } }, additionalProperties: false }
+            schema:
+              $ref: "#/components/schemas/NameRequest"
       responses:
-        "200": { description: OK, content: { application/json: { schema: { type: object, additionalProperties: true } } } }
-        "201": { description: Created, content: { application/json: { schema: { type: object, additionalProperties: true } } } }
+        "200":
+          description: Tag created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericObject"
+        "201":
+          description: Tag created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericObject"
+
   /tags/{id}:
     get:
       operationId: getTag
+      summary: Get tag
       x-openai-isConsequential: false
       parameters:
-        - { name: id, in: path, required: true, schema: { type: string } }
+        - $ref: "#/components/parameters/Id"
       responses:
-        "200": { description: OK, content: { application/json: { schema: { type: object, additionalProperties: true } } } }
+        "200":
+          description: Tag retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericObject"
     put:
       operationId: updateTag
+      summary: Update tag
       x-openai-isConsequential: true
       parameters:
-        - { name: id, in: path, required: true, schema: { type: string } }
+        - $ref: "#/components/parameters/Id"
       requestBody:
         required: true
         content:
           application/json:
-            schema: { type: object, required: [name], properties: { name: { type: string, minLength: 1 } }, additionalProperties: false }
+            schema:
+              $ref: "#/components/schemas/NameRequest"
       responses:
-        "200": { description: OK, content: { application/json: { schema: { type: object, additionalProperties: true } } } }
+        "200":
+          description: Tag updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericObject"
     delete:
       operationId: deleteTag
+      summary: Delete tag
       x-openai-isConsequential: true
       parameters:
-        - { name: id, in: path, required: true, schema: { type: string } }
+        - $ref: "#/components/parameters/Id"
       responses:
-        "200": { description: OK, content: { application/json: { schema: { type: object, additionalProperties: true } } } }
-        "204": { description: Deleted. }
+        "200":
+          description: Tag deleted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericObject"
+        "204":
+          description: Tag deleted.
+
   /projects:
     get:
       operationId: listProjects
+      summary: List projects
       x-openai-isConsequential: false
       parameters:
-        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 10 } }
-        - { name: cursor, in: query, schema: { type: string } }
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Cursor"
       responses:
-        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/ListResponse" } } } }
+        "200":
+          description: Projects retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListResponse"
+
   /variables:
     get:
       operationId: listVariables
+      summary: List variables
       x-openai-isConsequential: false
       parameters:
-        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 10 } }
-        - { name: cursor, in: query, schema: { type: string } }
-        - { name: projectId, in: query, schema: { type: string } }
-        - { name: state, in: query, schema: { type: string, enum: [empty] } }
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/ProjectId"
+        - name: state
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [empty]
       responses:
-        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/ListResponse" } } } }
+        "200":
+          description: Variables retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListResponse"
     post:
       operationId: createVariable
+      summary: Create variable
       x-openai-isConsequential: true
       requestBody:
         required: true
         content:
           application/json:
-            schema: { type: object, required: [key, value], properties: { key: { type: string }, value: { type: string }, type: { type: string }, projectId: { type: string } }, additionalProperties: false }
+            schema:
+              $ref: "#/components/schemas/VariableRequest"
       responses:
-        "200": { description: OK, content: { application/json: { schema: { type: object, additionalProperties: true } } } }
-        "201": { description: Created, content: { application/json: { schema: { type: object, additionalProperties: true } } } }
+        "200":
+          description: Variable created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericObject"
+        "201":
+          description: Variable created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericObject"
+
   /variables/{id}:
     put:
       operationId: updateVariable
+      summary: Update variable
       x-openai-isConsequential: true
       parameters:
-        - { name: id, in: path, required: true, schema: { type: string } }
+        - $ref: "#/components/parameters/Id"
       requestBody:
         required: true
         content:
           application/json:
-            schema: { type: object, required: [key, value], properties: { key: { type: string }, value: { type: string }, type: { type: string }, projectId: { type: string } }, additionalProperties: false }
+            schema:
+              $ref: "#/components/schemas/VariableRequest"
       responses:
-        "200": { description: OK, content: { application/json: { schema: { type: object, additionalProperties: true } } } }
-        "204": { description: Updated. }
+        "200":
+          description: Variable updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericObject"
+        "204":
+          description: Variable updated.
 
 components:
   securitySchemes:
@@ -264,58 +471,252 @@ components:
       type: apiKey
       in: header
       name: X-N8N-API-KEY
+
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      schema:
+        type: string
+    ProjectId:
+      name: projectId
+      in: query
+      required: false
+      schema:
+        type: string
+    ExcludePinnedData:
+      name: excludePinnedData
+      in: query
+      required: false
+      schema:
+        type: boolean
+        default: true
+    Active:
+      name: active
+      in: query
+      required: false
+      schema:
+        type: boolean
+    Tags:
+      name: tags
+      in: query
+      required: false
+      schema:
+        type: string
+    Name:
+      name: name
+      in: query
+      required: false
+      schema:
+        type: string
+
   schemas:
+    GenericObject:
+      type: object
+      additionalProperties: true
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        ok:
+          type: boolean
+        success:
+          type: boolean
+        error:
+          type: string
+        message:
+          type: string
+
+    DebugPingResponse:
+      type: object
+      additionalProperties: true
+      required: [ok]
+      properties:
+        ok:
+          type: boolean
+        kind:
+          type: string
+        schema:
+          type: string
+
     ListResponse:
       type: object
       additionalProperties: true
       properties:
-        data: { type: array, items: { type: object, additionalProperties: true } }
-        nextCursor: { type: string }
-        _normalizedFrom: { type: integer }
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/GenericObject"
+        nextCursor:
+          type: string
+        _normalizedFrom:
+          type: integer
+
+    WorkflowNode:
+      type: object
+      additionalProperties: true
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+        typeVersion:
+          type: number
+        position:
+          type: array
+          items:
+            type: number
+        parameters:
+          $ref: "#/components/schemas/GenericObject"
+        credentials:
+          $ref: "#/components/schemas/GenericObject"
+        disabled:
+          type: boolean
+        notes:
+          type: string
+
     WorkflowRequest:
       type: object
       required: [name, nodes, connections]
       additionalProperties: true
       properties:
-        name: { type: string, minLength: 1 }
+        name:
+          type: string
+          minLength: 1
         nodes:
           type: array
-          items: { type: object, additionalProperties: true }
-        connections: { type: object, additionalProperties: true }
-        settings: { type: object, additionalProperties: true }
-        staticData: { type: object, additionalProperties: true }
-        tags: { type: array, items: { type: object, additionalProperties: true } }
-        versionId: { type: string }
+          items:
+            $ref: "#/components/schemas/WorkflowNode"
+        connections:
+          $ref: "#/components/schemas/GenericObject"
+        settings:
+          $ref: "#/components/schemas/GenericObject"
+        staticData:
+          $ref: "#/components/schemas/GenericObject"
+        tags:
+          type: array
+          items:
+            $ref: "#/components/schemas/GenericObject"
+        versionId:
+          type: string
+
     WorkflowObject:
       type: object
       additionalProperties: true
       properties:
-        id: { type: string }
-        name: { type: string }
-        active: { type: boolean }
-        nodes: { type: array, items: { type: object, additionalProperties: true } }
-        connections: { type: object, additionalProperties: true }
-        settings: { type: object, additionalProperties: true }
-        versionId: { type: string }
-    WorkflowMutationResponse:
+        id:
+          type: string
+        name:
+          type: string
+        active:
+          type: boolean
+        nodes:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkflowNode"
+        connections:
+          $ref: "#/components/schemas/GenericObject"
+        settings:
+          $ref: "#/components/schemas/GenericObject"
+        versionId:
+          type: string
+
+    WorkflowWriteResponse:
       type: object
       additionalProperties: true
       properties:
-        success: { type: boolean }
-        ok: { type: boolean }
-        operation: { type: string }
-        workflowId: { type: string }
+        success:
+          type: boolean
+        ok:
+          type: boolean
+        operation:
+          type: string
+        workflowId:
+          type: string
         data:
-          type: object
-          additionalProperties: true
-          properties:
-            id: { type: string }
-            name: { type: string }
-            active: { type: boolean }
-            nodeCount: { type: integer }
-            versionId: { type: string }
-        workflow: { $ref: "#/components/schemas/WorkflowObject" }
-        message: { type: string }
-        error: { type: string }
-        writeAccepted: { type: boolean }
-        _normalizedFrom: { type: integer }
+          $ref: "#/components/schemas/GenericObject"
+        workflow:
+          $ref: "#/components/schemas/WorkflowObject"
+        message:
+          type: string
+        error:
+          type: string
+        writeAccepted:
+          type: boolean
+        _normalizedFrom:
+          type: integer
+
+    ActivateWorkflowRequest:
+      type: object
+      additionalProperties: true
+      properties:
+        versionId:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+
+    AuditRequest:
+      type: object
+      additionalProperties: true
+      properties:
+        additionalOptions:
+          $ref: "#/components/schemas/AuditAdditionalOptions"
+
+    AuditAdditionalOptions:
+      type: object
+      additionalProperties: true
+      properties:
+        daysAbandonedWorkflow:
+          type: integer
+          minimum: 1
+        categories:
+          type: array
+          items:
+            type: string
+            enum: [credentials, database, nodes, filesystem, instance]
+
+    NameRequest:
+      type: object
+      required: [name]
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          minLength: 1
+
+    VariableRequest:
+      type: object
+      required: [key, value]
+      additionalProperties: false
+      properties:
+        key:
+          type: string
+          minLength: 1
+        value:
+          type: string
+        type:
+          type: string
+        projectId:
+          type: string
