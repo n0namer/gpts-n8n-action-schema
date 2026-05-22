@@ -1,455 +1,385 @@
 openapi: 3.1.0
-info:
-  title: n8n REST Control API
-  version: 1.5.5-target-30-yaml
-servers:
-- url: https://n8n-control-production.up.railway.app/api/v1
-security:
-- N8nApiKey: []
+info: {title: n8n REST Control API, version: 1.5.6-no-duplicate-id}
+servers: [{url: https://n8n-control-production.up.railway.app/api/v1}]
+security: [{N8nApiKey: []}]
 paths:
   /workflows:
     get:
       operationId: listWorkflowsMini
       summary: listWorkflowsMini
       x-openai-isConsequential: false
-      responses: &id001
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Any'
       parameters:
-      - name: limit
-        in: query
-        required: false
-        schema:
-          type: integer
-          minimum: 1
-          maximum: 100
-          default: 10
+        - {name: limit, in: query, required: false, schema: {type: integer}}
+        - {name: cursor, in: query, required: false, schema: {type: string}}
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
     post:
       operationId: createWorkflow
       summary: createWorkflow
       x-openai-isConsequential: true
-      responses: *id001
+      parameters:
+        - {name: limit, in: query, required: false, schema: {type: integer}}
+        - {name: cursor, in: query, required: false, schema: {type: string}}
       requestBody:
         required: false
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Any'
+              $ref: '#/components/schemas/BodyNoId'
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
   /workflows/{id}:
     get:
       operationId: getWorkflow
       summary: getWorkflow
       x-openai-isConsequential: false
-      responses: *id001
       parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          minLength: 1
+        - {name: id, in: path, required: true, schema: {type: string}}
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
     put:
       operationId: updateWorkflow
       summary: updateWorkflow
       x-openai-isConsequential: true
-      responses: *id001
       parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          minLength: 1
+        - {name: id, in: path, required: true, schema: {type: string}}
       requestBody:
         required: false
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Any'
+              $ref: '#/components/schemas/BodyNoId'
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
   /workflows/{id}/activate:
     post:
       operationId: activateWorkflow
       summary: activateWorkflow
       x-openai-isConsequential: true
-      responses: *id001
       parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          minLength: 1
+        - {name: id, in: path, required: true, schema: {type: string}}
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
   /workflows/{id}/deactivate:
     post:
       operationId: deactivateWorkflow
       summary: deactivateWorkflow
       x-openai-isConsequential: true
-      responses: *id001
       parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          minLength: 1
+        - {name: id, in: path, required: true, schema: {type: string}}
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
   /workflows/search:
     get:
       operationId: searchWorkflows
       summary: searchWorkflows
       x-openai-isConsequential: false
-      responses: *id001
       parameters:
-      - name: limit
-        in: query
-        required: false
-        schema:
-          type: integer
-          minimum: 1
-          maximum: 100
-          default: 10
+        - {name: q, in: query, required: false, schema: {type: string}}
+        - {name: limit, in: query, required: false, schema: {type: integer}}
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
   /workflows/{id}/clone:
     post:
       operationId: cloneWorkflow
       summary: cloneWorkflow
       x-openai-isConsequential: true
-      responses: *id001
       parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          minLength: 1
+        - {name: id, in: path, required: true, schema: {type: string}}
       requestBody:
         required: false
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Any'
+              $ref: '#/components/schemas/BodyNoId'
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
   /workflows/validate:
     post:
       operationId: validateWorkflow
       summary: validateWorkflow
       x-openai-isConsequential: false
-      responses: *id001
       requestBody:
         required: false
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Any'
+              $ref: '#/components/schemas/BodyNoId'
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
   /workflows/diff:
     post:
       operationId: diffWorkflows
       summary: diffWorkflows
       x-openai-isConsequential: false
-      responses: *id001
       requestBody:
         required: false
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Any'
+              $ref: '#/components/schemas/BodyNoId'
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
   /workflows/{id}/patch:
     post:
       operationId: patchWorkflow
       summary: patchWorkflow
       x-openai-isConsequential: true
-      responses: *id001
       parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          minLength: 1
+        - {name: id, in: path, required: true, schema: {type: string}}
       requestBody:
         required: false
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Any'
+              $ref: '#/components/schemas/BodyNoId'
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
   /workflows/{id}/export:
     get:
       operationId: exportWorkflow
       summary: exportWorkflow
       x-openai-isConsequential: false
-      responses: *id001
       parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          minLength: 1
+        - {name: id, in: path, required: true, schema: {type: string}}
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
   /workflows/import:
     post:
       operationId: importWorkflow
       summary: importWorkflow
       x-openai-isConsequential: true
-      responses: *id001
       requestBody:
         required: false
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Any'
+              $ref: '#/components/schemas/BodyNoId'
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
   /workflows/{id}/summary:
     get:
       operationId: summarizeWorkflow
       summary: summarizeWorkflow
       x-openai-isConsequential: false
-      responses: *id001
       parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          minLength: 1
+        - {name: id, in: path, required: true, schema: {type: string}}
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
   /executions:
     get:
       operationId: listExecutions
       summary: listExecutions
       x-openai-isConsequential: false
-      responses: *id001
       parameters:
-      - name: limit
-        in: query
-        required: false
-        schema:
-          type: integer
-          minimum: 1
-          maximum: 100
-          default: 10
+        - {name: limit, in: query, required: false, schema: {type: integer}}
+        - {name: cursor, in: query, required: false, schema: {type: string}}
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
   /executions/{id}:
     get:
       operationId: getExecution
       summary: getExecution
       x-openai-isConsequential: false
-      responses: *id001
       parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          minLength: 1
+        - {name: id, in: path, required: true, schema: {type: string}}
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
   /workflows/{id}/executions/recent:
     get:
       operationId: getRecentExecutionsForWorkflow
       summary: getRecentExecutionsForWorkflow
       x-openai-isConsequential: false
-      responses: *id001
       parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          minLength: 1
-      - name: limit
-        in: query
-        required: false
-        schema:
-          type: integer
-          minimum: 1
-          maximum: 100
-          default: 10
+        - {name: id, in: path, required: true, schema: {type: string}}
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
   /executions/{id}/cancel:
     post:
       operationId: cancelExecution
       summary: cancelExecution
       x-openai-isConsequential: true
-      responses: *id001
       parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          minLength: 1
+        - {name: id, in: path, required: true, schema: {type: string}}
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
   /executions/{id}/retry:
     post:
       operationId: retryExecution
       summary: retryExecution
       x-openai-isConsequential: true
-      responses: *id001
       parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          minLength: 1
+        - {name: id, in: path, required: true, schema: {type: string}}
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
   /credentials:
     get:
       operationId: listCredentials
       summary: listCredentials
       x-openai-isConsequential: false
-      responses: *id001
       parameters:
-      - name: limit
-        in: query
-        required: false
-        schema:
-          type: integer
-          minimum: 1
-          maximum: 100
-          default: 10
+        - {name: limit, in: query, required: false, schema: {type: integer}}
+        - {name: cursor, in: query, required: false, schema: {type: string}}
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
   /credentials/{id}:
     get:
       operationId: getCredential
       summary: getCredential
       x-openai-isConsequential: false
-      responses: *id001
       parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          minLength: 1
+        - {name: id, in: path, required: true, schema: {type: string}}
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
   /credentials/schema/{credentialTypeName}:
     get:
       operationId: getCredentialSchema
       summary: getCredentialSchema
       x-openai-isConsequential: false
-      responses: *id001
       parameters:
-      - name: credentialTypeName
-        in: path
-        required: true
-        schema:
-          type: string
-          minLength: 1
+        - {name: credentialTypeName, in: path, required: true, schema: {type: string}}
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
   /credentials/{id}/test:
     post:
       operationId: testCredential
       summary: testCredential
       x-openai-isConsequential: true
-      responses: *id001
       parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          minLength: 1
+        - {name: id, in: path, required: true, schema: {type: string}}
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
   /variables:
     get:
       operationId: listVariables
       summary: listVariables
       x-openai-isConsequential: false
-      responses: *id001
       parameters:
-      - name: limit
-        in: query
-        required: false
-        schema:
-          type: integer
-          minimum: 1
-          maximum: 100
-          default: 10
+        - {name: limit, in: query, required: false, schema: {type: integer}}
+        - {name: cursor, in: query, required: false, schema: {type: string}}
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
     post:
       operationId: createVariable
       summary: createVariable
       x-openai-isConsequential: true
-      responses: *id001
+      parameters:
+        - {name: limit, in: query, required: false, schema: {type: integer}}
+        - {name: cursor, in: query, required: false, schema: {type: string}}
       requestBody:
         required: false
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Any'
+              $ref: '#/components/schemas/VariableBodyNoId'
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
   /variables/{id}:
     put:
       operationId: updateVariable
       summary: updateVariable
       x-openai-isConsequential: true
-      responses: *id001
       parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          minLength: 1
+        - {name: id, in: path, required: true, schema: {type: string}}
       requestBody:
         required: false
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Any'
+              $ref: '#/components/schemas/VariableBodyNoId'
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
   /audit:
     post:
       operationId: generateAudit
       summary: generateAudit
       x-openai-isConsequential: false
-      responses: *id001
       requestBody:
         required: false
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Any'
+              $ref: '#/components/schemas/BodyNoId'
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
   /projects:
     get:
       operationId: listProjects
       summary: listProjects
       x-openai-isConsequential: false
-      responses: *id001
       parameters:
-      - name: limit
-        in: query
-        required: false
-        schema:
-          type: integer
-          minimum: 1
-          maximum: 100
-          default: 10
+        - {name: limit, in: query, required: false, schema: {type: integer}}
+        - {name: cursor, in: query, required: false, schema: {type: string}}
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
   /control/health:
     get:
       operationId: getControlHealth
       summary: getControlHealth
       x-openai-isConsequential: false
-      responses: *id001
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
   /tasks/status:
     post:
       operationId: writeBackTaskStatus
       summary: writeBackTaskStatus
       x-openai-isConsequential: true
-      responses: *id001
       requestBody:
         required: false
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Any'
+              $ref: '#/components/schemas/TaskBodyNoId'
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
+
 components:
   securitySchemes:
-    N8nApiKey:
-      type: apiKey
-      in: header
-      name: X-N8N-API-KEY
+    N8nApiKey: {type: apiKey, in: header, name: X-N8N-API-KEY}
+  responses:
+    AnyResponse:
+      description: OK
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Any'}
   schemas:
     Any:
       type: object
       additionalProperties: true
       properties:
-        id:
-          type: string
-        name:
-          type: string
-        ok:
-          type: boolean
-        success:
-          type: boolean
-        error:
-          type: string
-        message:
-          type: string
+        ok: {type: boolean}
+        success: {type: boolean}
+        error: {type: string}
+        message: {type: string}
+        workflowId: {type: string}
+    BodyNoId:
+      type: object
+      additionalProperties: true
+      properties:
+        name: {type: string}
+        query: {type: string}
+        operation: {type: string}
+        data: {$ref: '#/components/schemas/Any'}
+        patch: {$ref: '#/components/schemas/Any'}
+        nodes:
+          type: array
+          items: {$ref: '#/components/schemas/Any'}
+        connections: {$ref: '#/components/schemas/Any'}
+        settings: {$ref: '#/components/schemas/Any'}
+        versionId: {type: string}
+    VariableBodyNoId:
+      type: object
+      additionalProperties: false
+      properties:
+        key: {type: string}
+        value: {type: string}
+        type: {type: string}
+        projectId: {type: string}
+    TaskBodyNoId:
+      type: object
+      additionalProperties: false
+      properties:
+        requestId: {type: string}
+        status: {type: string}
+        evidence: {type: string}
+        message: {type: string}
