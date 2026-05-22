@@ -1,1 +1,455 @@
-{"openapi":"3.1.0","info":{"title":"n8n REST Control API","version":"1.4.0-core","description":"Core GPT Actions schema. Debug and tag commands removed."},"servers":[{"url":"https://n8n-control-production.up.railway.app/api/v1"}],"security":[{"N8nApiKey":[]}],"paths":{"/workflows":{"get":{"operationId":"listWorkflowsMini","x-openai-isConsequential":false,"parameters":[{"name":"active","in":"query","required":false,"schema":{"type":"boolean"}},{"name":"tags","in":"query","required":false,"schema":{"type":"string"}},{"name":"name","in":"query","required":false,"schema":{"type":"string"}},{"name":"projectId","in":"query","required":false,"schema":{"type":"string"}},{"name":"excludePinnedData","in":"query","required":false,"schema":{"type":"boolean","default":true}},{"name":"limit","in":"query","required":false,"schema":{"type":"integer","minimum":1,"maximum":100,"default":10}},{"name":"cursor","in":"query","required":false,"schema":{"type":"string"}}],"responses":{"200":{"description":"OK","content":{"application/json":{"schema":{"$ref":"#/components/schemas/List"}}}}}},"post":{"operationId":"createWorkflow","x-openai-isConsequential":true,"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/WorkflowReq"}}}},"responses":{"200":{"description":"OK","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Any"}}}},"204":{"description":"Empty; verify with get/list."}}}},"/workflows/{id}":{"get":{"operationId":"getWorkflow","x-openai-isConsequential":false,"parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"string","minLength":1}},{"name":"excludePinnedData","in":"query","required":false,"schema":{"type":"boolean","default":true}}],"responses":{"200":{"description":"OK","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Any"}}}}}},"put":{"operationId":"updateWorkflow","x-openai-isConsequential":true,"parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"string","minLength":1}}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/WorkflowReq"}}}},"responses":{"200":{"description":"OK","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Any"}}}},"204":{"description":"Empty; verify with get/list."}}}},"/workflows/{id}/activate":{"post":{"operationId":"activateWorkflow","x-openai-isConsequential":true,"parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"string","minLength":1}}],"responses":{"200":{"description":"OK","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Any"}}}},"204":{"description":"Empty; verify with get/list."}}}},"/workflows/{id}/deactivate":{"post":{"operationId":"deactivateWorkflow","x-openai-isConsequential":true,"parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"string","minLength":1}}],"responses":{"200":{"description":"OK","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Any"}}}},"204":{"description":"Empty; verify with get/list."}}}},"/executions":{"get":{"operationId":"listExecutions","x-openai-isConsequential":false,"parameters":[{"name":"includeData","in":"query","required":false,"schema":{"type":"boolean","default":false}},{"name":"status","in":"query","required":false,"schema":{"type":"string","enum":["canceled","crashed","error","new","running","success","unknown","waiting"]}},{"name":"workflowId","in":"query","required":false,"schema":{"type":"string"}},{"name":"projectId","in":"query","required":false,"schema":{"type":"string"}},{"name":"limit","in":"query","required":false,"schema":{"type":"integer","minimum":1,"maximum":100,"default":10}},{"name":"cursor","in":"query","required":false,"schema":{"type":"string"}}],"responses":{"200":{"description":"OK","content":{"application/json":{"schema":{"$ref":"#/components/schemas/List"}}}}}}},"/executions/{id}":{"get":{"operationId":"getExecution","x-openai-isConsequential":false,"parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"string","minLength":1}},{"name":"includeData","in":"query","required":false,"schema":{"type":"boolean","default":false}}],"responses":{"200":{"description":"OK","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Any"}}}}}}},"/credentials":{"get":{"operationId":"listCredentials","x-openai-isConsequential":false,"parameters":[{"name":"limit","in":"query","required":false,"schema":{"type":"integer","minimum":1,"maximum":100,"default":10}},{"name":"cursor","in":"query","required":false,"schema":{"type":"string"}}],"responses":{"200":{"description":"OK","content":{"application/json":{"schema":{"$ref":"#/components/schemas/List"}}}}}}},"/credentials/{id}":{"get":{"operationId":"getCredential","x-openai-isConsequential":false,"parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"string","minLength":1}}],"responses":{"200":{"description":"OK","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Any"}}}}}}},"/credentials/schema/{credentialTypeName}":{"get":{"operationId":"getCredentialSchema","x-openai-isConsequential":false,"parameters":[{"name":"credentialTypeName","in":"path","required":true,"schema":{"type":"string","minLength":1}}],"responses":{"200":{"description":"OK","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Any"}}}}}}},"/credentials/{id}/test":{"post":{"operationId":"testCredential","x-openai-isConsequential":true,"parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"string","minLength":1}}],"responses":{"200":{"description":"OK","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Any"}}}}}}},"/variables":{"get":{"operationId":"listVariables","x-openai-isConsequential":false,"parameters":[{"name":"projectId","in":"query","required":false,"schema":{"type":"string"}},{"name":"state","in":"query","required":false,"schema":{"type":"string","enum":["empty"]}},{"name":"limit","in":"query","required":false,"schema":{"type":"integer","minimum":1,"maximum":100,"default":10}},{"name":"cursor","in":"query","required":false,"schema":{"type":"string"}}],"responses":{"200":{"description":"OK","content":{"application/json":{"schema":{"$ref":"#/components/schemas/List"}}}}}},"post":{"operationId":"createVariable","x-openai-isConsequential":true,"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/VariableReq"}}}},"responses":{"200":{"description":"OK","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Any"}}}},"201":{"description":"OK","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Any"}}}}}}},"/variables/{id}":{"put":{"operationId":"updateVariable","x-openai-isConsequential":true,"parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"string","minLength":1}}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/VariableReq"}}}},"responses":{"200":{"description":"OK","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Any"}}}},"204":{"description":"Updated."}}}},"/audit":{"post":{"operationId":"generateAudit","x-openai-isConsequential":false,"requestBody":{"required":false,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/AuditReq"}}}},"responses":{"200":{"description":"OK","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Any"}}}}}}},"/projects":{"get":{"operationId":"listProjects","x-openai-isConsequential":false,"parameters":[{"name":"limit","in":"query","required":false,"schema":{"type":"integer","minimum":1,"maximum":100,"default":10}},{"name":"cursor","in":"query","required":false,"schema":{"type":"string"}}],"responses":{"200":{"description":"OK","content":{"application/json":{"schema":{"$ref":"#/components/schemas/List"}}}}}}}},"components":{"securitySchemes":{"N8nApiKey":{"type":"apiKey","in":"header","name":"X-N8N-API-KEY"}},"schemas":{"Any":{"type":"object","additionalProperties":true,"properties":{"id":{"type":"string"},"name":{"type":"string"},"ok":{"type":"boolean"},"success":{"type":"boolean"},"error":{"type":"string"},"message":{"type":"string"}}},"List":{"type":"object","additionalProperties":true,"properties":{"data":{"type":"array","items":{"$ref":"#/components/schemas/Any"}},"nextCursor":{"type":"string"},"_normalizedFrom":{"type":"integer"}}},"Node":{"type":"object","additionalProperties":true,"properties":{"id":{"type":"string"},"name":{"type":"string"},"type":{"type":"string"},"typeVersion":{"type":"number"},"position":{"type":"array","items":{"type":"number"}},"parameters":{"$ref":"#/components/schemas/Any"},"credentials":{"$ref":"#/components/schemas/Any"}}},"WorkflowReq":{"type":"object","required":["name","nodes","connections"],"additionalProperties":true,"properties":{"name":{"type":"string","minLength":1},"nodes":{"type":"array","items":{"$ref":"#/components/schemas/Node"}},"connections":{"$ref":"#/components/schemas/Any"},"settings":{"$ref":"#/components/schemas/Any"},"staticData":{"$ref":"#/components/schemas/Any"},"tags":{"type":"array","items":{"$ref":"#/components/schemas/Any"}},"versionId":{"type":"string"}}},"VariableReq":{"type":"object","required":["key","value"],"additionalProperties":false,"properties":{"key":{"type":"string","minLength":1},"value":{"type":"string"},"type":{"type":"string"},"projectId":{"type":"string"}}},"AuditReq":{"type":"object","additionalProperties":true,"properties":{"additionalOptions":{"$ref":"#/components/schemas/Any"}}}}}}
+openapi: 3.1.0
+info:
+  title: n8n REST Control API
+  version: 1.5.5-target-30-yaml
+servers:
+- url: https://n8n-control-production.up.railway.app/api/v1
+security:
+- N8nApiKey: []
+paths:
+  /workflows:
+    get:
+      operationId: listWorkflowsMini
+      summary: listWorkflowsMini
+      x-openai-isConsequential: false
+      responses: &id001
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Any'
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 10
+    post:
+      operationId: createWorkflow
+      summary: createWorkflow
+      x-openai-isConsequential: true
+      responses: *id001
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Any'
+  /workflows/{id}:
+    get:
+      operationId: getWorkflow
+      summary: getWorkflow
+      x-openai-isConsequential: false
+      responses: *id001
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+    put:
+      operationId: updateWorkflow
+      summary: updateWorkflow
+      x-openai-isConsequential: true
+      responses: *id001
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Any'
+  /workflows/{id}/activate:
+    post:
+      operationId: activateWorkflow
+      summary: activateWorkflow
+      x-openai-isConsequential: true
+      responses: *id001
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+  /workflows/{id}/deactivate:
+    post:
+      operationId: deactivateWorkflow
+      summary: deactivateWorkflow
+      x-openai-isConsequential: true
+      responses: *id001
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+  /workflows/search:
+    get:
+      operationId: searchWorkflows
+      summary: searchWorkflows
+      x-openai-isConsequential: false
+      responses: *id001
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 10
+  /workflows/{id}/clone:
+    post:
+      operationId: cloneWorkflow
+      summary: cloneWorkflow
+      x-openai-isConsequential: true
+      responses: *id001
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Any'
+  /workflows/validate:
+    post:
+      operationId: validateWorkflow
+      summary: validateWorkflow
+      x-openai-isConsequential: false
+      responses: *id001
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Any'
+  /workflows/diff:
+    post:
+      operationId: diffWorkflows
+      summary: diffWorkflows
+      x-openai-isConsequential: false
+      responses: *id001
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Any'
+  /workflows/{id}/patch:
+    post:
+      operationId: patchWorkflow
+      summary: patchWorkflow
+      x-openai-isConsequential: true
+      responses: *id001
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Any'
+  /workflows/{id}/export:
+    get:
+      operationId: exportWorkflow
+      summary: exportWorkflow
+      x-openai-isConsequential: false
+      responses: *id001
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+  /workflows/import:
+    post:
+      operationId: importWorkflow
+      summary: importWorkflow
+      x-openai-isConsequential: true
+      responses: *id001
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Any'
+  /workflows/{id}/summary:
+    get:
+      operationId: summarizeWorkflow
+      summary: summarizeWorkflow
+      x-openai-isConsequential: false
+      responses: *id001
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+  /executions:
+    get:
+      operationId: listExecutions
+      summary: listExecutions
+      x-openai-isConsequential: false
+      responses: *id001
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 10
+  /executions/{id}:
+    get:
+      operationId: getExecution
+      summary: getExecution
+      x-openai-isConsequential: false
+      responses: *id001
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+  /workflows/{id}/executions/recent:
+    get:
+      operationId: getRecentExecutionsForWorkflow
+      summary: getRecentExecutionsForWorkflow
+      x-openai-isConsequential: false
+      responses: *id001
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 10
+  /executions/{id}/cancel:
+    post:
+      operationId: cancelExecution
+      summary: cancelExecution
+      x-openai-isConsequential: true
+      responses: *id001
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+  /executions/{id}/retry:
+    post:
+      operationId: retryExecution
+      summary: retryExecution
+      x-openai-isConsequential: true
+      responses: *id001
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+  /credentials:
+    get:
+      operationId: listCredentials
+      summary: listCredentials
+      x-openai-isConsequential: false
+      responses: *id001
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 10
+  /credentials/{id}:
+    get:
+      operationId: getCredential
+      summary: getCredential
+      x-openai-isConsequential: false
+      responses: *id001
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+  /credentials/schema/{credentialTypeName}:
+    get:
+      operationId: getCredentialSchema
+      summary: getCredentialSchema
+      x-openai-isConsequential: false
+      responses: *id001
+      parameters:
+      - name: credentialTypeName
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+  /credentials/{id}/test:
+    post:
+      operationId: testCredential
+      summary: testCredential
+      x-openai-isConsequential: true
+      responses: *id001
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+  /variables:
+    get:
+      operationId: listVariables
+      summary: listVariables
+      x-openai-isConsequential: false
+      responses: *id001
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 10
+    post:
+      operationId: createVariable
+      summary: createVariable
+      x-openai-isConsequential: true
+      responses: *id001
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Any'
+  /variables/{id}:
+    put:
+      operationId: updateVariable
+      summary: updateVariable
+      x-openai-isConsequential: true
+      responses: *id001
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Any'
+  /audit:
+    post:
+      operationId: generateAudit
+      summary: generateAudit
+      x-openai-isConsequential: false
+      responses: *id001
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Any'
+  /projects:
+    get:
+      operationId: listProjects
+      summary: listProjects
+      x-openai-isConsequential: false
+      responses: *id001
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 10
+  /control/health:
+    get:
+      operationId: getControlHealth
+      summary: getControlHealth
+      x-openai-isConsequential: false
+      responses: *id001
+  /tasks/status:
+    post:
+      operationId: writeBackTaskStatus
+      summary: writeBackTaskStatus
+      x-openai-isConsequential: true
+      responses: *id001
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Any'
+components:
+  securitySchemes:
+    N8nApiKey:
+      type: apiKey
+      in: header
+      name: X-N8N-API-KEY
+  schemas:
+    Any:
+      type: object
+      additionalProperties: true
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        ok:
+          type: boolean
+        success:
+          type: boolean
+        error:
+          type: string
+        message:
+          type: string
