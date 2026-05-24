@@ -20,18 +20,37 @@ const ROOT = resolve(__dirname, '..');
 // ── Load allowlist ──────────────────────────────────────────────────
 const allowlist = JSON.parse(readFileSync(resolve(ROOT, 'config/actions.allowlist.json'), 'utf8'));
 const includeGptIds = new Set(allowlist.include_operation_ids);
-const forbiddenGptIds = new Set(allowlist.forbidden_operation_ids);
 const sourceToGpt = allowlist.source_to_gpt_operation_id_map || {};
 
 // ── Load vendor snapshot ────────────────────────────────────────────
 const rawYaml = readFileSync(resolve(ROOT, 'vendor/n8n-openapi.snapshot.yml'), 'utf8');
 const spec = yaml.parse(rawYaml);
 
-// ── Parsing helpers ─────────────────────────────────────────────────
-// n8n spec uses x-eov-operation-id for operationIds.
-// Build source operationId → { method, path, operationObj }
-const sourceOps = {};
+// ── Build component parameter lookup ────────────────────────────────
+const compParams = spec.components?.parameters || {};
+// Also look for capitalized key variants (Cursor, Limit, etc.)
+for (const [name, param] of Object.entries(spec.components?.parameters || {})) {
+  const nameLower = name.toLowerCase();
+  if (nameLower !== name && !compParams[nameLower]) {
+    compParams[nameLower] = param;
+  }
+}
 
+function resolveParamRef(refStr) {
+  if (!refStr || typeof refStr !== 'string') return null;
+  // Parse #/components/parameters/Name
+  const parts = refStr.replace(/^#\//, '').split('/');
+  if (parts[0] === 'components' && parts[1] === 'parameters') {
+    const key = parts.slice(2).join('/');
+    const direct = spec.components?.parameters?.[key];
+    const lower = spec.components?.parameters?.[key.toLowerCase()];
+    return direct || lower || null;
+  }
+  return null;
+}
+
+// ── Build source operation index ────────────────────────────────────
+const sourceOps = {};
 for (const [path, methods] of Object.entries(spec.paths || {})) {
   for (const [method, operation] of Object.entries(methods)) {
     const sourceId = operation['x-eov-operation-id'];
@@ -42,97 +61,85 @@ for (const [path, methods] of Object.entries(spec.paths || {})) {
 }
 
 // ── Resolve which source operations to include ──────────────────────
-// Build reverse map: GPT id → source id
 const gptToSource = {};
 for (const [sourceId, gptId] of Object.entries(sourceToGpt)) {
   gptToSource[gptId] = sourceId;
 }
 
 const resolvedOps = [];
-
 for (const gptId of includeGptIds) {
-  // Check if it's a direct source match
   if (sourceOps[gptId]) {
     resolvedOps.push({ gptId, sourceId: gptId, ...sourceOps[gptId] });
-    continue;
+  } else {
+    const mappedSourceId = gptToSource[gptId];
+    if (mappedSourceId && sourceOps[mappedSourceId]) {
+      resolvedOps.push({ gptId, sourceId: mappedSourceId, ...sourceOps[mappedSourceId] });
+    } else {
+      console.error(`WARN: operationId "${gptId}" not found in source. Skipping.`);
+    }
   }
-  // Check mapped source
-  const mappedSourceId = gptToSource[gptId];
-  if (mappedSourceId && sourceOps[mappedSourceId]) {
-    resolvedOps.push({ gptId, sourceId: mappedSourceId, ...sourceOps[mappedSourceId] });
-    continue;
-  }
-  console.error(`WARN: operationId "${gptId}" not found in source snapshot. Skipping.`);
 }
 
 if (resolvedOps.length === 0) {
-  console.error('FATAL: No operations resolved from allowlist.');
+  console.error('FATAL: No operations resolved.');
   process.exit(1);
 }
 
-// ── Build output schema ─────────────────────────────────────────────
-const outputPaths = {};
-const outputSchemas = {};
-const usedRefs = new Set();
+// ── Helpers ─────────────────────────────────────────────────────────
 
-function extractSchema(schemaObj) {
-  if (!schemaObj) return null;
+/** Extract a schema object safe for GPT Builder: no nulls, no malformed additionalProperties. */
+function cleanSchema(obj) {
+  if (!obj || typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) return obj.map(cleanSchema);
+  if (obj.$ref) return obj; // keep refs
 
-  // Dereference $ref within our spec
-  if (schemaObj.$ref) {
-    const refPath = schemaObj.$ref.replace('#/components/schemas/', '');
-    usedRefs.add(refPath);
-    return schemaObj; // Keep $ref for GPT Builder compatibility (internal refs only)
-  }
+  const out = {};
+  const keep = [
+    '$ref', 'type', 'description', 'format', 'nullable', 'default', 'example',
+    'readOnly', 'writeOnly', 'required', 'enum', 'minimum', 'maximum',
+    'minLength', 'maxLength', 'pattern', 'minItems', 'maxItems',
+    'oneOf', 'anyOf', 'allOf', 'properties', 'items', 'additionalProperties',
+  ];
 
-  if (Array.isArray(schemaObj)) {
-    return schemaObj.map(extractSchema);
-  }
-
-  if (typeof schemaObj === 'object') {
-    const result = {};
-    for (const [key, value] of Object.entries(schemaObj)) {
-      if (key === '$ref' || key === 'description' || key === 'type' || key === 'format' ||
-          key === 'nullable' || key === 'default' || key === 'example' || key === 'readOnly' ||
-          key === 'writeOnly' || key === 'required' || key === 'enum' ||
-          key === 'minimum' || key === 'maximum' || key === 'minLength' || key === 'maxLength' ||
-          key === 'pattern' || key === 'minItems' || key === 'maxItems' ||
-          key === 'additionalProperties' || key === 'properties' || key === 'items' ||
-          key === 'oneOf' || key === 'anyOf' || key === 'allOf') {
-        result[key] = extractSchema(value);
+  for (const key of keep) {
+    const val = obj[key];
+    if (val === undefined || val === null) continue; // NEVER output null
+    if (key === 'additionalProperties') {
+      // Must be boolean or object, never null
+      if (val === true || val === false || (typeof val === 'object' && val !== null)) {
+        out[key] = cleanSchema(val);
       }
+      continue;
     }
-    if (Object.keys(result).length > 0) return result;
-    return null;
+    if (key === 'properties') {
+      out[key] = {};
+      for (const [propName, propVal] of Object.entries(val)) {
+        if (propVal !== null && propVal !== undefined) {
+          out[key][propName] = cleanSchema(propVal);
+        }
+      }
+      if (Object.keys(out[key]).length === 0) delete out[key];
+      continue;
+    }
+    out[key] = cleanSchema(val);
   }
-  return schemaObj;
+
+  return out;
 }
 
-function gatherRequiredSchemas(schemaObj, specSchemas) {
-  if (!schemaObj || typeof schemaObj !== 'object') return;
-  if (Array.isArray(schemaObj)) {
-    schemaObj.forEach(s => gatherRequiredSchemas(s, specSchemas));
-    return;
-  }
-  if (schemaObj.$ref) {
-    const refName = schemaObj.$ref.replace('#/components/schemas/', '');
-    if (!usedRefs.has(refName) && specSchemas[refName]) {
-      usedRefs.add(refName);
-      gatherRequiredSchemas(specSchemas[refName], specSchemas);
-    }
-    return;
-  }
-  if (schemaObj.properties) {
-    for (const val of Object.values(schemaObj.properties)) {
-      gatherRequiredSchemas(val, specSchemas);
-    }
-  }
-  if (schemaObj.items) gatherRequiredSchemas(schemaObj.items, specSchemas);
-  if (schemaObj.allOf) schemaObj.allOf.forEach(s => gatherRequiredSchemas(s, specSchemas));
-  if (schemaObj.oneOf) schemaObj.oneOf.forEach(s => gatherRequiredSchemas(s, specSchemas));
-  if (schemaObj.anyOf) schemaObj.anyOf.forEach(s => gatherRequiredSchemas(s, specSchemas));
+/** Check if a URL path has template params like {id}, {versionId} etc. */
+function extractPathTemplateNames(path) {
+  const names = [];
+  const re = /\{(\w+)\}/g;
+  let m;
+  while ((m = re.exec(path)) !== null) names.push(m[1]);
+  return names;
 }
 
+const usedRefs = new Set();
+const outputPaths = {};
+
+// ── Process each operation ──────────────────────────────────────────
 for (const { gptId, method, path, operation } of resolvedOps) {
   const outputOp = {
     operationId: gptId,
@@ -143,37 +150,76 @@ for (const { gptId, method, path, operation } of resolvedOps) {
     responses: {},
   };
 
-  // x-openai-isConsequential: mutations are consequential
   const mutationMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
   if (mutationMethods.includes(method.toUpperCase())) {
     outputOp['x-openai-isConsequential'] = true;
   }
 
-  // Parameters
-  const params = operation.parameters || [];
-  for (const param of params) {
-    outputOp.parameters.push({
-      name: param.name,
-      in: param.in,
-      required: param.required || false,
-      description: param.description || '',
-      schema: extractSchema(param.schema) || { type: 'string' },
-    });
-    if (param.schema && param.schema.$ref) {
-      gatherRequiredSchemas(param.schema, spec.components?.schemas);
+  // ── Resolve parameters ────────────────────────────────────────────
+  const resolvedParams = [];
+
+  // Resolve $ref parameters from source
+  const rawParams = operation.parameters || [];
+  for (const p of rawParams) {
+    if (p.$ref) {
+      const resolved = resolveParamRef(p.$ref);
+      if (resolved) {
+        // Extract only GPT-safe fields
+        const param = {
+          name: resolved.name || '',
+          in: resolved.in || '',
+          required: resolved.required || false,
+          description: resolved.description || '',
+          schema: cleanSchema(resolved.schema) || { type: 'string' },
+        };
+        if (param.name && param.in) {
+          resolvedParams.push(param);
+        }
+      }
+    } else {
+      // Inline param
+      const param = {
+        name: p.name || '',
+        in: p.in || '',
+        required: p.required || false,
+        description: p.description || '',
+        schema: cleanSchema(p.schema) || { type: 'string' },
+      };
+      resolvedParams.push(param);
     }
   }
 
-  // RequestBody
+  // Ensure path template params are present
+  const templateNames = extractPathTemplateNames(path);
+  const existingPathParamIds = resolvedParams
+    .filter(p => p.in === 'path')
+    .map(p => p.name);
+
+  for (const tplName of templateNames) {
+    if (!existingPathParamIds.includes(tplName)) {
+      resolvedParams.push({
+        name: tplName,
+        in: 'path',
+        required: true,
+        description: `${tplName} identifier`,
+        schema: { type: 'string' },
+      });
+    }
+  }
+
+  outputOp.parameters = resolvedParams;
+
+  // ── RequestBody ───────────────────────────────────────────────────
   if (operation.requestBody) {
     const rb = operation.requestBody;
     const jsonContent = rb.content?.['application/json'];
     if (jsonContent?.schema) {
       const schema = jsonContent.schema;
 
-      // For createWorkflow, enforce strict schema with required fields
       let bodySchema;
-      if (gptId === 'createWorkflow' && schema.$ref) {
+
+      if (gptId === 'createWorkflow') {
+        // Enforce strict createWorkflow schema
         bodySchema = {
           type: 'object',
           description: 'Always send complete n8n workflow payload. Never omit nodes, connections, or settings. Never send only name. Use Manual Trigger node for safe draft workflows.',
@@ -181,9 +227,22 @@ for (const { gptId, method, path, operation } of resolvedOps) {
           additionalProperties: false,
           properties: {
             name: { type: 'string', description: 'Workflow name (required)' },
-            nodes: { type: 'array', description: 'Workflow nodes/operations (required, at least one node)', items: { type: 'object' }, minItems: 1 },
-            connections: { type: 'object', description: 'Connections between nodes (required, can be empty {})', additionalProperties: true },
-            settings: { type: 'object', description: 'Workflow settings (required, can be empty {})', additionalProperties: true },
+            nodes: {
+              type: 'array',
+              description: 'Workflow nodes/operations (required, at least one node)',
+              items: { type: 'object' },
+              minItems: 1,
+            },
+            connections: {
+              type: 'object',
+              description: 'Connections between nodes (required, can be empty {})',
+              additionalProperties: true,
+            },
+            settings: {
+              type: 'object',
+              description: 'Workflow settings (required, can be empty {})',
+              additionalProperties: true,
+            },
           },
           example: {
             name: 'Draft Workflow',
@@ -199,82 +258,94 @@ for (const { gptId, method, path, operation } of resolvedOps) {
             settings: {},
           },
         };
+      } else if (gptId === 'updateWorkflow') {
+        // updateWorkflow: allow partial update, but require name
+        const bodySchemaRef = {
+          type: 'object',
+          description: 'Workflow update payload. Include id as path parameter. For full replace, send complete payload.',
+          required: ['name', 'nodes', 'connections', 'settings'],
+          additionalProperties: false,
+          properties: {
+            name: { type: 'string', description: 'Workflow name (required)' },
+            nodes: {
+              type: 'array',
+              description: 'Workflow nodes/operations (required)',
+              items: { type: 'object' },
+              minItems: 1,
+            },
+            connections: {
+              type: 'object',
+              description: 'Connections between nodes (required, can be empty {})',
+              additionalProperties: true,
+            },
+            settings: {
+              type: 'object',
+              description: 'Workflow settings (required, can be empty {})',
+              additionalProperties: true,
+            },
+          },
+        };
+        bodySchema = bodySchemaRef;
       } else if (schema.$ref) {
-        const refName = schema.$ref.replace('#/components/schemas/', '');
         bodySchema = { $ref: schema.$ref };
+        const refName = schema.$ref.replace('#/components/schemas/', '');
         usedRefs.add(refName);
       } else {
-        bodySchema = extractSchema(schema);
+        bodySchema = cleanSchema(schema);
       }
 
       outputOp.requestBody = {
         required: rb.required !== false,
-        content: {
-          'application/json': {
-            schema: bodySchema,
-          },
-        },
+        content: { 'application/json': { schema: bodySchema } },
       };
-
-      if (bodySchema?.$ref) {
-        gatherRequiredSchemas(bodySchema, spec.components?.schemas);
-      }
     }
   }
 
-  // Responses: simplified — return generic 200 response
-  outputOp.responses = {
-    '200': { description: 'Success' },
-  };
-  if (operation.responses?.['400']) {
-    outputOp.responses['400'] = { description: 'Bad Request' };
-  }
-  if (operation.responses?.['401']) {
-    outputOp.responses['401'] = { description: 'Unauthorized' };
-  }
-  if (operation.responses?.['403']) {
-    outputOp.responses['403'] = { description: 'Forbidden' };
-  }
-  if (operation.responses?.['404']) {
-    outputOp.responses['404'] = { description: 'Not Found' };
+  // ── Responses ─────────────────────────────────────────────────────
+  outputOp.responses = { '200': { description: 'Success' } };
+  for (const code of ['400', '401', '403', '404']) {
+    if (operation.responses?.[code]) {
+      outputOp.responses[code] = { description: code === '400' ? 'Bad Request' : code === '401' ? 'Unauthorized' : code === '403' ? 'Forbidden' : 'Not Found' };
+    }
   }
 
-  // Build output path
-  if (!outputPaths[path]) {
-    outputPaths[path] = {};
-  }
+  // ── Add to output paths ───────────────────────────────────────────
+  if (!outputPaths[path]) outputPaths[path] = {};
   outputPaths[path][method] = outputOp;
 }
 
-// ── Collect referenced schemas ──────────────────────────────────────
-const outputComponents = {
-  schemas: {},
-};
-
+// ── Collect referenced component schemas ────────────────────────────
+const outputSchemas = {};
 for (const refName of usedRefs) {
   const sourceSchema = spec.components?.schemas?.[refName];
   if (sourceSchema) {
-    outputComponents.schemas[refName] = extractSchema(sourceSchema);
+    outputSchemas[refName] = cleanSchema(sourceSchema);
   }
 }
 
-// Strip unnecessary schema complex types for GPT Builder compatibility
-// Keep simple schemas only
+// Ensure no schema has additionalProperties: null
+for (const [name, schema] of Object.entries(outputSchemas)) {
+  if (schema.additionalProperties === undefined || schema.additionalProperties === null) {
+    delete schema.additionalProperties;
+  }
+  if (schema.properties) {
+    for (const [propName, propVal] of Object.entries(schema.properties)) {
+      if (propVal === null) delete schema.properties[propName];
+    }
+    if (Object.keys(schema.properties).length === 0) delete schema.properties;
+  }
+}
 
-// ── Assemble final document ─────────────────────────────────────────
+// ── Assemble ────────────────────────────────────────────────────────
 const output = {
   openapi: '3.1.0',
   info: {
     title: 'n8n REST Control API',
     version: '1.5.8-generated-allowlist',
-    description: 'GPT-compatible OpenAPI schema for n8n workflow and resource management via n8n-control proxy. Generated from native n8n OpenAPI snapshot with allowlist.',
+    description: 'GPT-compatible OpenAPI schema for n8n workflow and resource management via n8n-control proxy.',
   },
-  servers: [
-    { url: 'https://n8n-control-production.up.railway.app/api/v1' },
-  ],
-  security: [
-    { N8nApiKey: [] },
-  ],
+  servers: [{ url: 'https://n8n-control-production.up.railway.app/api/v1' }],
+  security: [{ N8nApiKey: [] }],
   components: {
     securitySchemes: {
       N8nApiKey: {
@@ -288,17 +359,13 @@ const output = {
   paths: outputPaths,
 };
 
-// Add schemas if any were referenced
-if (Object.keys(outputComponents.schemas).length > 0) {
-  output.components.schemas = outputComponents.schemas;
+if (Object.keys(outputSchemas).length > 0) {
+  output.components.schemas = outputSchemas;
 }
 
-// ── Serialize to YAML ───────────────────────────────────────────────
+// ── Write output ────────────────────────────────────────────────────
 const outputYaml = yaml.stringify(output, { lineWidth: 120, noCompatMode: true, quotingType: '"' });
-
 writeFileSync(resolve(ROOT, 'openapi.yaml'), outputYaml, 'utf8');
-console.log(`Generated openapi.yaml: ${resolvedOps.length} operations, ${usedRefs.size} schemas, version 1.5.8-generated-allowlist`);
 
-// Report resolution
-const resolvedIds = resolvedOps.map(o => o.gptId).sort();
-console.log('Operation IDs:', JSON.stringify(resolvedIds));
+console.log(`Generated openapi.yaml: ${resolvedOps.length} operations, ${usedRefs.size} schemas, version 1.5.8-generated-allowlist`);
+console.log('Operation IDs:', JSON.stringify(resolvedOps.map(o => o.gptId).sort()));

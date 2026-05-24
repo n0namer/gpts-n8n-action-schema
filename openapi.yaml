@@ -2,9 +2,7 @@ openapi: 3.1.0
 info:
   title: n8n REST Control API
   version: 1.5.8-generated-allowlist
-  description: >-
-    GPT-compatible OpenAPI schema for n8n workflow and resource management via n8n-control proxy. Generated from native
-    n8n OpenAPI snapshot with allowlist.
+  description: GPT-compatible OpenAPI schema for n8n workflow and resource management via n8n-control proxy.
 servers:
   - url: https://n8n-control-production.up.railway.app/api/v1
 security:
@@ -19,29 +17,28 @@ components:
         n8n API key from Settings > API (not OpenClaw/operator key). Must be a valid n8n API key with appropriate
         scopes.
   schemas:
-    workflow:
-      type: object
-      additionalProperties: null
-      required:
-        - name
-        - nodes
-        - connections
-        - settings
-      properties:
-        description:
-          type: string
-          description: Description of the workflow
-          example: My workflow description
     variable.create:
       type: object
-      additionalProperties: null
       required:
         - key
         - value
       properties:
+        id:
+          type: string
+          readOnly: true
+        key:
+          type: string
+        value:
+          type: string
+          example: test
         type:
           type: string
           readOnly: true
+        projectId:
+          type: string
+          nullable: true
+          example: VmwOO9HeTEj20kxM
+      additionalProperties: false
 paths:
   /workflows:
     get:
@@ -86,12 +83,21 @@ paths:
           schema:
             type: boolean
             example: true
-        - required: false
-          description: ""
+        - name: limit
+          in: query
+          required: false
+          description: The maximum number of items to return.
           schema:
-            type: string
-        - required: false
-          description: ""
+            type: number
+            default: 100
+            example: 100
+            maximum: 250
+        - name: cursor
+          in: query
+          required: false
+          description: >-
+            Paginate by setting the cursor parameter to the nextCursor attribute returned by the previous request's
+            response. Default value fetches the first "page" of the collection. See pagination for more detail.
           schema:
             type: string
       responses:
@@ -179,8 +185,10 @@ paths:
           schema:
             type: boolean
             example: true
-        - required: false
-          description: ""
+        - name: id
+          in: path
+          required: true
+          description: The ID of the workflow.
           schema:
             type: string
       responses:
@@ -197,8 +205,10 @@ paths:
       tags:
         - Workflow
       parameters:
-        - required: false
-          description: ""
+        - name: id
+          in: path
+          required: true
+          description: The ID of the workflow.
           schema:
             type: string
       responses:
@@ -216,7 +226,32 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/workflow"
+              type: object
+              description: Workflow update payload. Include id as path parameter. For full replace, send complete payload.
+              required:
+                - name
+                - nodes
+                - connections
+                - settings
+              additionalProperties: false
+              properties:
+                name:
+                  type: string
+                  description: Workflow name (required)
+                nodes:
+                  type: array
+                  description: Workflow nodes/operations (required)
+                  items:
+                    type: object
+                  minItems: 1
+                connections:
+                  type: object
+                  description: Connections between nodes (required, can be empty {})
+                  additionalProperties: true
+                settings:
+                  type: object
+                  description: Workflow settings (required, can be empty {})
+                  additionalProperties: true
     delete:
       operationId: deleteWorkflow
       summary: deleteWorkflow
@@ -224,8 +259,10 @@ paths:
       tags:
         - Workflow
       parameters:
-        - required: false
-          description: ""
+        - name: id
+          in: path
+          required: true
+          description: The ID of the workflow.
           schema:
             type: string
       responses:
@@ -244,8 +281,10 @@ paths:
       tags:
         - Workflow
       parameters:
-        - required: false
-          description: ""
+        - name: id
+          in: path
+          required: true
+          description: The ID of the workflow.
           schema:
             type: string
       responses:
@@ -265,6 +304,12 @@ paths:
             schema:
               type: object
               properties:
+                versionId:
+                  type: string
+                  description: The specific version ID to activate or publish. If not provided, the latest version is used.
+                name:
+                  type: string
+                  description: Optional name for the workflow version during activation.
                 description:
                   type: string
                   description: Optional description for the workflow version during activation.
@@ -276,8 +321,10 @@ paths:
       tags:
         - Workflow
       parameters:
-        - required: false
-          description: ""
+        - name: id
+          in: path
+          required: true
+          description: The ID of the workflow.
           schema:
             type: string
       responses:
@@ -296,14 +343,21 @@ paths:
       tags:
         - Execution
       parameters:
-        - required: false
-          description: ""
+        - name: includeData
+          in: query
+          required: false
+          description: Whether or not to include the execution's detailed data.
           schema:
-            type: string
-        - required: false
-          description: ""
+            type: boolean
+        - name: redactExecutionData
+          in: query
+          required: false
+          description: >
+            Controls execution data redaction. When `true`, execution output data is always redacted. When `false`,
+            requests unredacted (revealed) data — requires the `execution:reveal` scope. When omitted, follows the
+            workflow redaction policy.
           schema:
-            type: string
+            type: boolean
         - name: status
           in: query
           required: false
@@ -333,12 +387,21 @@ paths:
           schema:
             type: string
             example: VmwOO9HeTEj20kxM
-        - required: false
-          description: ""
+        - name: limit
+          in: query
+          required: false
+          description: The maximum number of items to return.
           schema:
-            type: string
-        - required: false
-          description: ""
+            type: number
+            default: 100
+            example: 100
+            maximum: 250
+        - name: cursor
+          in: query
+          required: false
+          description: >-
+            Paginate by setting the cursor parameter to the nextCursor attribute returned by the previous request's
+            response. Default value fetches the first "page" of the collection. See pagination for more detail.
           schema:
             type: string
       responses:
@@ -358,18 +421,27 @@ paths:
       tags:
         - Execution
       parameters:
-        - required: false
-          description: ""
+        - name: id
+          in: path
+          required: true
+          description: The ID of the execution.
           schema:
-            type: string
-        - required: false
-          description: ""
+            type: number
+        - name: includeData
+          in: query
+          required: false
+          description: Whether or not to include the execution's detailed data.
           schema:
-            type: string
-        - required: false
-          description: ""
+            type: boolean
+        - name: redactExecutionData
+          in: query
+          required: false
+          description: >
+            Controls execution data redaction. When `true`, execution output data is always redacted. When `false`,
+            requests unredacted (revealed) data — requires the `execution:reveal` scope. When omitted, follows the
+            workflow redaction policy.
           schema:
-            type: string
+            type: boolean
       responses:
         "200":
           description: Success
@@ -386,10 +458,12 @@ paths:
       tags:
         - Execution
       parameters:
-        - required: false
-          description: ""
+        - name: id
+          in: path
+          required: true
+          description: The ID of the execution.
           schema:
-            type: string
+            type: number
       responses:
         "200":
           description: Success
@@ -406,10 +480,12 @@ paths:
       tags:
         - Execution
       parameters:
-        - required: false
-          description: ""
+        - name: id
+          in: path
+          required: true
+          description: The ID of the execution.
           schema:
-            type: string
+            type: number
       responses:
         "200":
           description: Success
@@ -424,7 +500,12 @@ paths:
           application/json:
             schema:
               type: object
-              properties: null
+              properties:
+                loadWorkflow:
+                  type: boolean
+                  description: >-
+                    Whether to load the currently saved workflow to execute instead of the one saved at the time of the
+                    execution. If set to true, it will retry with the latest version of the workflow.
   /executions/{id}/stop:
     post:
       operationId: stopExecution
@@ -433,10 +514,12 @@ paths:
       tags:
         - Execution
       parameters:
-        - required: false
-          description: ""
+        - name: id
+          in: path
+          required: true
+          description: The ID of the execution.
           schema:
-            type: string
+            type: number
       responses:
         "200":
           description: Success
@@ -455,12 +538,21 @@ paths:
       tags:
         - Credential
       parameters:
-        - required: false
-          description: ""
+        - name: limit
+          in: query
+          required: false
+          description: The maximum number of items to return.
           schema:
-            type: string
-        - required: false
-          description: ""
+            type: number
+            default: 100
+            example: 100
+            maximum: 250
+        - name: cursor
+          in: query
+          required: false
+          description: >-
+            Paginate by setting the cursor parameter to the nextCursor attribute returned by the previous request's
+            response. Default value fetches the first "page" of the collection. See pagination for more detail.
           schema:
             type: string
       responses:
@@ -541,12 +633,21 @@ paths:
       tags:
         - Variables
       parameters:
-        - required: false
-          description: ""
+        - name: limit
+          in: query
+          required: false
+          description: The maximum number of items to return.
           schema:
-            type: string
-        - required: false
-          description: ""
+            type: number
+            default: 100
+            example: 100
+            maximum: 250
+        - name: cursor
+          in: query
+          required: false
+          description: >-
+            Paginate by setting the cursor parameter to the nextCursor attribute returned by the previous request's
+            response. Default value fetches the first "page" of the collection. See pagination for more detail.
           schema:
             type: string
         - name: projectId
@@ -598,8 +699,10 @@ paths:
       tags:
         - Variables
       parameters:
-        - required: false
-          description: ""
+        - name: id
+          in: path
+          required: true
+          description: The ID of the variable.
           schema:
             type: string
       responses:
@@ -627,8 +730,10 @@ paths:
       tags:
         - Variables
       parameters:
-        - required: false
-          description: ""
+        - name: id
+          in: path
+          required: true
+          description: The ID of the variable.
           schema:
             type: string
       responses:
@@ -647,12 +752,21 @@ paths:
       tags:
         - Projects
       parameters:
-        - required: false
-          description: ""
+        - name: limit
+          in: query
+          required: false
+          description: The maximum number of items to return.
           schema:
-            type: string
-        - required: false
-          description: ""
+            type: number
+            default: 100
+            example: 100
+            maximum: 250
+        - name: cursor
+          in: query
+          required: false
+          description: >-
+            Paginate by setting the cursor parameter to the nextCursor attribute returned by the previous request's
+            response. Default value fetches the first "page" of the collection. See pagination for more detail.
           schema:
             type: string
       responses:
