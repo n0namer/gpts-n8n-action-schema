@@ -22,7 +22,8 @@
     "createVariable",
     "updateVariable",
     "deleteVariable",
-    "listProjects"
+    "listProjects",
+    "generateAudit"
   ],
   "forbidden_operation_ids": [
     "searchWorkflows",
@@ -34,8 +35,7 @@
     "diffWorkflows",
     "validateWorkflow",
     "getControlHealth",
-    "writeBackTaskStatus",
-    "generateAudit"
+    "writeBackTaskStatus"
   ],
   "source_to_gpt_operation_id_map": {
     "getWorkflows": "listWorkflows",

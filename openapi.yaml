@@ -779,3 +779,40 @@ paths:
           description: Success
         "401":
           description: Unauthorized
+  /audit:
+    post:
+      operationId: generateAudit
+      summary: generateAudit
+      description: Generate a security audit for your n8n instance.
+      tags:
+        - Audit
+      parameters: []
+      responses:
+        "200":
+          description: Success
+        "401":
+          description: Unauthorized
+      x-openai-isConsequential: true
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                additionalOptions:
+                  type: object
+                  properties:
+                    daysAbandonedWorkflow:
+                      type: integer
+                      description: Days for a workflow to be considered abandoned if not executed
+                    categories:
+                      type: array
+                      items:
+                        type: string
+                        enum:
+                          - credentials
+                          - database
+                          - nodes
+                          - filesystem
+                          - instance
