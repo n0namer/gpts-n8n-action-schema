@@ -1,4 +1,4 @@
-openapi: 3.1.0
+openapi: 3.0.3
 info:
   title: n8n REST Control API
   version: 1.5.8-generated-allowlist
@@ -16,6 +16,7 @@ components:
       description: >-
         n8n API key from Settings > API (not OpenClaw/operator key). Must be a valid n8n API key with appropriate
         scopes.
+  schemas: {}
 paths:
   /workflows:
     get:

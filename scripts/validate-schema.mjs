@@ -36,9 +36,9 @@ function check(name, pass, detail = '') {
 // 1. YAML parsed
 check('YAML_PARSE', true, 'parsed successfully');
 
-// 2. openapi version
+// 2. openapi version — must be 3.0.x for GPT Builder compatibility
 const ver = (spec.openapi || '').toString();
-check('OPENAPI_VERSION', ver.startsWith('3.'), `version=${ver}`);
+check('OPENAPI_VERSION', ver.startsWith('3.0.'), `version=${ver}`);
 
 // 3. Server URL correct
 const servers = spec.servers || [];
@@ -59,6 +59,15 @@ check('SECURITY_SCHEME', !!n8nKeyScheme, n8nKeyScheme ? 'apiKey X-N8N-API-KEY' :
 const security = spec.security || [];
 const secRefOk = security.some(s => Object.keys(s).some(k => secSchemes[k]));
 check('SECURITY_REQUIRES_KEY', secRefOk, 'references N8nApiKey');
+
+// 5b. components must exist
+const componentsExist = !!(spec.components && typeof spec.components === 'object' && !Array.isArray(spec.components));
+check('COMPONENTS_EXIST', componentsExist, componentsExist ? 'ok' : 'missing or not object');
+
+// 5c. components.schemas must exist and be a non-array object
+const schemasExist = !!(spec.components?.schemas && typeof spec.components.schemas === 'object' && !Array.isArray(spec.components.schemas));
+check('COMPONENTS_SCHEMAS_EXIST', schemasExist,
+  schemasExist ? `object with ${Object.keys(spec.components.schemas).length} entries` : 'missing or not object');
 
 // ── Collect all operations ──────────────────────────────────────────
 const allOps = [];

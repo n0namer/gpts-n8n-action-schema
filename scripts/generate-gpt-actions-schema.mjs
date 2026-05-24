@@ -407,7 +407,7 @@ for (const [name, schema] of Object.entries(outputSchemas)) {
 
 // ── Assemble ────────────────────────────────────────────────────────
 const output = {
-  openapi: '3.1.0',
+  openapi: '3.0.3',
   info: {
     title: 'n8n REST Control API',
     version: '1.5.8-generated-allowlist',
@@ -428,9 +428,9 @@ const output = {
   paths: outputPaths,
 };
 
-if (Object.keys(outputSchemas).length > 0) {
-  output.components.schemas = outputSchemas;
-}
+output.components.schemas = Object.keys(outputSchemas).length > 0
+  ? outputSchemas
+  : {};
 
 // ── Write output ────────────────────────────────────────────────────
 const outputYaml = yaml.stringify(output, { lineWidth: 120, noCompatMode: true, quotingType: '"' });
