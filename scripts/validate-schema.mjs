@@ -249,6 +249,19 @@ for (const { path, method, op } of allOps) {
 check('NO_READONLY_IN_REQBODY', bodyReadOnly.length === 0,
   bodyReadOnly.length > 0 ? bodyReadOnly.join('; ') : 'no readOnly properties');
 
+// 19. Every response must have content JSON schema
+let missingResponseContent = [];
+for (const { path, method, op } of allOps) {
+  for (const [code, resp] of Object.entries(op.responses || {})) {
+    const hasContent = resp?.content?.['application/json']?.schema;
+    if (!hasContent) {
+      missingResponseContent.push(`${op.operationId} (${code}): missing content schema`);
+    }
+  }
+}
+check('ALL_RESPONSES_HAVE_CONTENT', missingResponseContent.length === 0,
+  missingResponseContent.length > 0 ? missingResponseContent.slice(0, 5).join('; ') : 'all responses have content JSON schema');
+
 // ── Summary ─────────────────────────────────────────────────────────
 const passed = checks.filter(c => c.status === 'PASS').length;
 const failed = checks.filter(c => c.status === 'FAIL').length;

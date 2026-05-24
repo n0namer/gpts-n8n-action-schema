@@ -371,10 +371,24 @@ for (const { gptId, method, path, operation } of resolvedOps) {
   }
 
   // ── Responses ─────────────────────────────────────────────────────
-  outputOp.responses = { '200': { description: 'Success' } };
+  // Every response includes content JSON schema so GPT Actions returns raw body
+  const responseContent = {
+    content: {
+      'application/json': {
+        schema: { $ref: '#/components/schemas/AnyResponse' },
+      },
+    },
+  };
+
+  outputOp.responses = {
+    '200': { description: 'Success', ...responseContent },
+  };
   for (const code of ['400', '401', '403', '404']) {
     if (operation.responses?.[code]) {
-      outputOp.responses[code] = { description: code === '400' ? 'Bad Request' : code === '401' ? 'Unauthorized' : code === '403' ? 'Forbidden' : 'Not Found' };
+      outputOp.responses[code] = {
+        description: code === '400' ? 'Bad Request' : code === '401' ? 'Unauthorized' : code === '403' ? 'Forbidden' : 'Not Found',
+        ...responseContent,
+      };
     }
   }
 
@@ -404,6 +418,14 @@ for (const [name, schema] of Object.entries(outputSchemas)) {
     if (Object.keys(schema.properties).length === 0) delete schema.properties;
   }
 }
+
+// ── Always add AnyResponse schema for response bodies ─────────────
+// GPT Actions requires content JSON schema in responses to return raw body
+outputSchemas.AnyResponse = {
+  type: 'object',
+  additionalProperties: true,
+  description: 'Generic JSON response from the n8n API.',
+};
 
 // ── Assemble ────────────────────────────────────────────────────────
 const output = {

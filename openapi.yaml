@@ -16,7 +16,11 @@ components:
       description: >-
         n8n API key from Settings > API (not OpenClaw/operator key). Must be a valid n8n API key with appropriate
         scopes.
-  schemas: {}
+  schemas:
+    AnyResponse:
+      type: object
+      additionalProperties: true
+      description: Generic JSON response from the n8n API.
 paths:
   /workflows:
     get:
@@ -81,8 +85,13 @@ paths:
       responses:
         "200":
           description: Success
+          content: &ref_0
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyResponse"
         "401":
           description: Unauthorized
+          content: *ref_0
     post:
       operationId: createWorkflow
       summary: createWorkflow
@@ -93,14 +102,22 @@ paths:
       responses:
         "200":
           description: Success
+          content: &ref_1
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyResponse"
         "400":
           description: Bad Request
+          content: *ref_1
         "401":
           description: Unauthorized
+          content: *ref_1
         "403":
           description: Forbidden
+          content: *ref_1
         "404":
           description: Not Found
+          content: *ref_1
       x-openai-isConsequential: true
       requestBody:
         required: true
@@ -172,10 +189,16 @@ paths:
       responses:
         "200":
           description: Success
+          content: &ref_2
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyResponse"
         "401":
           description: Unauthorized
+          content: *ref_2
         "404":
           description: Not Found
+          content: *ref_2
     put:
       operationId: updateWorkflow
       summary: updateWorkflow
@@ -192,12 +215,19 @@ paths:
       responses:
         "200":
           description: Success
+          content: &ref_3
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyResponse"
         "400":
           description: Bad Request
+          content: *ref_3
         "401":
           description: Unauthorized
+          content: *ref_3
         "404":
           description: Not Found
+          content: *ref_3
       x-openai-isConsequential: true
       requestBody:
         required: true
@@ -246,10 +276,16 @@ paths:
       responses:
         "200":
           description: Success
+          content: &ref_4
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyResponse"
         "401":
           description: Unauthorized
+          content: *ref_4
         "404":
           description: Not Found
+          content: *ref_4
       x-openai-isConsequential: true
   /workflows/{id}/activate:
     post:
@@ -268,12 +304,19 @@ paths:
       responses:
         "200":
           description: Success
+          content: &ref_5
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyResponse"
         "400":
           description: Bad Request
+          content: *ref_5
         "401":
           description: Unauthorized
+          content: *ref_5
         "404":
           description: Not Found
+          content: *ref_5
       x-openai-isConsequential: true
       requestBody:
         required: false
@@ -308,10 +351,16 @@ paths:
       responses:
         "200":
           description: Success
+          content: &ref_6
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyResponse"
         "401":
           description: Unauthorized
+          content: *ref_6
         "404":
           description: Not Found
+          content: *ref_6
       x-openai-isConsequential: true
   /executions:
     get:
@@ -385,12 +434,19 @@ paths:
       responses:
         "200":
           description: Success
+          content: &ref_7
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyResponse"
         "401":
           description: Unauthorized
+          content: *ref_7
         "403":
           description: Forbidden
+          content: *ref_7
         "404":
           description: Not Found
+          content: *ref_7
   /executions/{id}:
     get:
       operationId: getExecution
@@ -423,12 +479,19 @@ paths:
       responses:
         "200":
           description: Success
+          content: &ref_8
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyResponse"
         "401":
           description: Unauthorized
+          content: *ref_8
         "403":
           description: Forbidden
+          content: *ref_8
         "404":
           description: Not Found
+          content: *ref_8
     delete:
       operationId: deleteExecution
       summary: deleteExecution
@@ -445,10 +508,16 @@ paths:
       responses:
         "200":
           description: Success
+          content: &ref_9
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyResponse"
         "401":
           description: Unauthorized
+          content: *ref_9
         "404":
           description: Not Found
+          content: *ref_9
       x-openai-isConsequential: true
   /executions/{id}/retry:
     post:
@@ -467,10 +536,16 @@ paths:
       responses:
         "200":
           description: Success
+          content: &ref_10
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyResponse"
         "401":
           description: Unauthorized
+          content: *ref_10
         "404":
           description: Not Found
+          content: *ref_10
       x-openai-isConsequential: true
       requestBody:
         required: false
@@ -501,10 +576,16 @@ paths:
       responses:
         "200":
           description: Success
+          content: &ref_11
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyResponse"
         "401":
           description: Unauthorized
+          content: *ref_11
         "404":
           description: Not Found
+          content: *ref_11
       x-openai-isConsequential: true
   /credentials:
     get:
@@ -536,8 +617,13 @@ paths:
       responses:
         "200":
           description: Success
+          content: &ref_12
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyResponse"
         "401":
           description: Unauthorized
+          content: *ref_12
   /credentials/{id}:
     get:
       operationId: getCredential
@@ -555,12 +641,19 @@ paths:
       responses:
         "200":
           description: Success
+          content: &ref_13
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyResponse"
         "401":
           description: Unauthorized
+          content: *ref_13
         "403":
           description: Forbidden
+          content: *ref_13
         "404":
           description: Not Found
+          content: *ref_13
     delete:
       operationId: deleteCredential
       summary: deleteCredential
@@ -577,10 +670,16 @@ paths:
       responses:
         "200":
           description: Success
+          content: &ref_14
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyResponse"
         "401":
           description: Unauthorized
+          content: *ref_14
         "404":
           description: Not Found
+          content: *ref_14
       x-openai-isConsequential: true
   /credentials/schema/{credentialTypeName}:
     get:
@@ -599,10 +698,16 @@ paths:
       responses:
         "200":
           description: Success
+          content: &ref_15
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyResponse"
         "401":
           description: Unauthorized
+          content: *ref_15
         "404":
           description: Not Found
+          content: *ref_15
   /variables:
     get:
       operationId: listVariables
@@ -646,8 +751,13 @@ paths:
       responses:
         "200":
           description: Success
+          content: &ref_16
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyResponse"
         "401":
           description: Unauthorized
+          content: *ref_16
     post:
       operationId: createVariable
       summary: createVariable
@@ -658,10 +768,16 @@ paths:
       responses:
         "200":
           description: Success
+          content: &ref_17
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyResponse"
         "400":
           description: Bad Request
+          content: *ref_17
         "401":
           description: Unauthorized
+          content: *ref_17
       x-openai-isConsequential: true
       requestBody:
         required: true
@@ -700,14 +816,22 @@ paths:
       responses:
         "200":
           description: Success
+          content: &ref_18
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyResponse"
         "400":
           description: Bad Request
+          content: *ref_18
         "401":
           description: Unauthorized
+          content: *ref_18
         "403":
           description: Forbidden
+          content: *ref_18
         "404":
           description: Not Found
+          content: *ref_18
       x-openai-isConsequential: true
       requestBody:
         required: true
@@ -745,10 +869,16 @@ paths:
       responses:
         "200":
           description: Success
+          content: &ref_19
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyResponse"
         "401":
           description: Unauthorized
+          content: *ref_19
         "404":
           description: Not Found
+          content: *ref_19
       x-openai-isConsequential: true
   /projects:
     get:
@@ -778,8 +908,13 @@ paths:
       responses:
         "200":
           description: Success
+          content: &ref_20
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyResponse"
         "401":
           description: Unauthorized
+          content: *ref_20
   /audit:
     post:
       operationId: generateAudit
@@ -791,8 +926,13 @@ paths:
       responses:
         "200":
           description: Success
+          content: &ref_21
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyResponse"
         "401":
           description: Unauthorized
+          content: *ref_21
       x-openai-isConsequential: true
       requestBody:
         required: false
