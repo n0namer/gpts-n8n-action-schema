@@ -1,0 +1,203 @@
+# openclaw-dev-team/tasks.yaml
+project: gpts-n8n-action-schema
+north_star: >
+  ChatGPT Custom GPT Actions must manage n8n workflows through n8n-control
+  using a reproducible GPT-compatible OpenAPI schema generated from a native
+  n8n REST allowlist. Final acceptance is live E2E:
+  createWorkflow -> getWorkflow -> updateWorkflow -> getWorkflow read-back -> deleteWorkflow.
+
+context:
+  repos:
+    schema_repo: n0namer/gpts-n8n-action-schema
+    schema_branch: main
+    control_repo: n0namer/n8n-control
+    control_branch: setup-caddy-proxy
+  public_server: https://n8n-control-production.up.railway.app/api/v1
+  current_schema_version: 1.5.7-raw-n8n-rest
+  target_schema_version: 1.5.8-generated-allowlist
+  hard_limit:
+    max_gpt_actions: 30
+  evidence_already_known:
+    - "POST /api/v1/workflows works when X-N8N-API-KEY is the real n8n key: apiKeyLength=289, prefixClass=starts_with_eyJ, upstreamStatusCode=200."
+    - "Wrong OP key fails: apiKeyLength=43, prefixClass=starts_with_op_, upstreamStatusCode=401."
+    - "createWorkflow requires complete payload: name, nodes, connections, settings. Missing nodes/settings produced upstream 400."
+    - "No synthetic commands in GPT Actions schema. search/clone/export/summary/diff/validate are not native raw REST commands."
+  constraints:
+    - "Do not log full API keys or Authorization values."
+    - "Do not add synthetic operationIds to GPT Actions schema."
+    - "Do not exceed 30 operationIds."
+    - "Do not hand-edit openapi.yaml except as generated output."
+    - "Keep schema GPT Builder-compatible: simple internal refs only, no external refs, unique operationIds."
+    - "Caddy/n8n-control remains the public entrypoint."
+
+tasks:
+  - id: T001
+    title: Create generator project scaffold
+    repo: schema_repo
+    files:
+      - package.json
+      - config/actions.allowlist.json
+      - scripts/generate-gpt-actions-schema.mjs
+      - scripts/validate-schema.mjs
+      - vendor/n8n-openapi.snapshot.json
+      - README.md
+    dod:
+      - "npm run generate exists."
+      - "npm run validate exists."
+      - "npm test runs generate then validate."
+      - "No network dependency required for tests; use vendor snapshot."
+
+  - id: T002
+    title: Define explicit GPT Actions allowlist
+    repo: schema_repo
+    file: config/actions.allowlist.json
+    requirements:
+      max_operations: 30
+      include_operation_ids:
+        - listWorkflows
+        - createWorkflow
+        - getWorkflow
+        - updateWorkflow
+        - deleteWorkflow
+        - activateWorkflow
+        - deactivateWorkflow
+        - listExecutions
+        - getExecution
+        - deleteExecution
+        - retryExecution
+        - stopExecution
+        - listCredentials
+        - getCredential
+        - deleteCredential
+        - getCredentialSchema
+        - listVariables
+        - createVariable
+        - updateVariable
+        - deleteVariable
+        - listProjects
+      forbidden_operation_ids:
+        - searchWorkflows
+        - cloneWorkflow
+        - importWorkflow
+        - patchWorkflow
+        - exportWorkflow
+        - summarizeWorkflow
+        - diffWorkflows
+        - validateWorkflow
+        - getControlHealth
+        - writeBackTaskStatus
+        - generateAudit
+    dod:
+      - "Allowlist count <= 30."
+      - "Generated openapi.yaml contains exactly allowlisted operationIds available in source mapping."
+      - "Forbidden operationIds absent."
+
+  - id: T003
+    title: Implement generator
+    repo: schema_repo
+    file: scripts/generate-gpt-actions-schema.mjs
+    requirements:
+      - "Input: vendor/n8n-openapi.snapshot.json and config/actions.allowlist.json."
+      - "Output: openapi.yaml."
+      - "Map/keep only allowlisted native n8n REST paths."
+      - "Set server to https://n8n-control-production.up.railway.app/api/v1."
+      - "Set security scheme N8nApiKey header X-N8N-API-KEY."
+      - "Set info.version to 1.5.8-generated-allowlist."
+      - "Preserve operationIds from allowlist."
+      - "Use simple schemas compatible with GPT Builder."
+      - "For createWorkflow requestBody, enforce strict workflow create schema."
+    create_workflow_contract:
+      required:
+        - name
+        - nodes
+        - connections
+        - settings
+      additionalProperties: false
+      draft_example:
+        name: Draft Workflow
+        nodes:
+          - id: manual-trigger
+            name: Manual Trigger
+            type: n8n-nodes-base.manualTrigger
+            typeVersion: 1
+            position: [0, 0]
+            parameters: {}
+        connections: {}
+        settings: {}
+      description_must_say:
+        - "Always send complete n8n workflow payload."
+        - "Never omit nodes, connections, or settings."
+        - "Never send only name."
+        - "Use Manual Trigger node for safe draft workflows."
+        - "Do not use OpenClaw/operator key; use n8n API key in X-N8N-API-KEY."
+    dod:
+      - "Generated createWorkflow schema requires name,nodes,connections,settings."
+      - "Generated createWorkflow includes minimal valid example."
+      - "Generated BodyNoId/update schema strips/forbids read-only fields where feasible."
+
+  - id: T004
+    title: Implement validator
+    repo: schema_repo
+    file: scripts/validate-schema.mjs
+    checks:
+      - "YAML parses."
+      - "openapi is 3.1.0 or GPT-compatible current value."
+      - "server is n8n-control production /api/v1."
+      - "security scheme is apiKey header X-N8N-API-KEY."
+      - "operationIds are unique."
+      - "operationIds count <= 30."
+      - "forbidden operationIds absent."
+      - "createWorkflow exists and requestBody.required == true."
+      - "createWorkflow schema requires name,nodes,connections,settings."
+      - "createWorkflow schema additionalProperties == false."
+      - "No external $ref."
+    dod:
+      - "npm run validate fails non-zero on any check failure."
+      - "npm test passes after generate."
+
+  - id: T005
+    title: Generate 1.5.8 schema
+    repo: schema_repo
+    command: npm test
+    dod:
+      - "openapi.yaml generated, version 1.5.8-generated-allowlist."
+      - "Diff is explainable: generated schema, strict createWorkflow, allowlist <= 30."
+      - "No manual synthetic endpoints."
+
+  - id: T006
+    title: Document how to update schema source
+    repo: schema_repo
+    file: README.md
+    dod:
+      - "Explains how to refresh vendor/n8n-openapi.snapshot.json."
+      - "Explains how to change allowlist."
+      - "Explains why GPT Actions max 30 operations."
+      - "Explains createWorkflow complete payload requirement and known failure modes."
+
+  - id: T007
+    title: Report evidence
+    report_required:
+      - "old/new commit SHA"
+      - "operationId count and list"
+      - "validator output"
+      - "createWorkflow schema required fields"
+      - "forbidden operationIds absent"
+    dod:
+      - "No DONE claim for North Star; only schema-generator done."
+
+replan_checkpoints:
+  - after: T002
+    if: "allowlist > 30"
+    action: "Stop and propose smaller operation set; do not generate oversized schema."
+  - after: T004
+    if: "validator cannot parse generated YAML"
+    action: "Fix generator, do not hand-edit openapi.yaml."
+  - after: T005
+    if: "GPT Builder incompatibility suspected"
+    action: "Compare structure with 1.5.7 and simplify refs/schemas."
+  - after: "live Actions E2E"
+    if: "create fails 400"
+    action: "Use BODY_DIAG_WORKFLOW_CREATE logs to patch schema descriptions/examples."
+  - after: "live Actions E2E"
+    if: "auth fails 401"
+    action: "Do not patch schema; fix GPT Actions X-N8N-API-KEY secret."
