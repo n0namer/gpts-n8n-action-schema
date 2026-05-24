@@ -407,7 +407,7 @@ for (const [name, schema] of Object.entries(outputSchemas)) {
 
 // ── Assemble ────────────────────────────────────────────────────────
 const output = {
-  openapi: '3.0.3',
+  openapi: '3.1.0',
   info: {
     title: 'n8n REST Control API',
     version: '1.5.8-generated-allowlist',

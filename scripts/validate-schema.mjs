@@ -36,9 +36,9 @@ function check(name, pass, detail = '') {
 // 1. YAML parsed
 check('YAML_PARSE', true, 'parsed successfully');
 
-// 2. openapi version — must be 3.0.x for GPT Builder compatibility
+// 2. openapi version — must be 3.1.0 or 3.1.1 for GPT Builder
 const ver = (spec.openapi || '').toString();
-check('OPENAPI_VERSION', ver.startsWith('3.0.'), `version=${ver}`);
+check('OPENAPI_VERSION', ver === '3.1.0' || ver === '3.1.1', `version=${ver}`);
 
 // 3. Server URL correct
 const servers = spec.servers || [];
