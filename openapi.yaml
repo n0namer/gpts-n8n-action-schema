@@ -16,29 +16,6 @@ components:
       description: >-
         n8n API key from Settings > API (not OpenClaw/operator key). Must be a valid n8n API key with appropriate
         scopes.
-  schemas:
-    variable.create:
-      type: object
-      required:
-        - key
-        - value
-      properties:
-        id:
-          type: string
-          readOnly: true
-        key:
-          type: string
-        value:
-          type: string
-          example: test
-        type:
-          type: string
-          readOnly: true
-        projectId:
-          type: string
-          nullable: true
-          example: VmwOO9HeTEj20kxM
-      additionalProperties: false
 paths:
   /workflows:
     get:
@@ -690,7 +667,21 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/variable.create"
+              type: object
+              required:
+                - key
+                - value
+              properties:
+                key:
+                  type: string
+                value:
+                  type: string
+                  example: test
+                projectId:
+                  type: string
+                  nullable: true
+                  example: VmwOO9HeTEj20kxM
+              additionalProperties: false
   /variables/{id}:
     put:
       operationId: updateVariable
@@ -722,7 +713,21 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/variable.create"
+              type: object
+              required:
+                - key
+                - value
+              properties:
+                key:
+                  type: string
+                value:
+                  type: string
+                  example: test
+                projectId:
+                  type: string
+                  nullable: true
+                  example: VmwOO9HeTEj20kxM
+              additionalProperties: false
     delete:
       operationId: deleteVariable
       summary: deleteVariable

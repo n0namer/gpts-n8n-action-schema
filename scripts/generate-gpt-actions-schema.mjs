@@ -87,6 +87,62 @@ if (resolvedOps.length === 0) {
 
 // ── Helpers ─────────────────────────────────────────────────────────
 
+/** Strip readOnly: true properties from a schema object (mutator, returns new obj). */
+function stripReadOnly(schema) {
+  if (!schema || typeof schema !== 'object') return schema;
+  if (Array.isArray(schema)) return schema.map(stripReadOnly);
+  if (schema.$ref) return schema;
+
+  const out = { ...schema };
+  if (out.properties) {
+    const newProps = {};
+    for (const [name, val] of Object.entries(out.properties)) {
+      if (val && typeof val === 'object' && val.readOnly === true) {
+        continue; // skip readOnly
+      }
+      newProps[name] = stripReadOnly(val);
+    }
+    out.properties = newProps;
+    if (Object.keys(out.properties).length === 0) delete out.properties;
+  }
+  if (out.required) {
+    // Remove required fields that are no longer in properties
+    if (out.properties) {
+      out.required = out.required.filter(f => out.properties[f]);
+    }
+    if (out.required.length === 0) delete out.required;
+  }
+  // Clean readOnly/writeOnly from self
+  if (out.readOnly) delete out.readOnly;
+  if (out.writeOnly) delete out.writeOnly;
+  if (out.items) out.items = stripReadOnly(out.items);
+  if (out.allOf) out.allOf = out.allOf.map(stripReadOnly);
+  if (out.oneOf) out.oneOf = out.oneOf.map(stripReadOnly);
+  if (out.anyOf) out.anyOf = out.anyOf.map(stripReadOnly);
+  if (out.additionalProperties && typeof out.additionalProperties === 'object') {
+    out.additionalProperties = stripReadOnly(out.additionalProperties);
+  }
+  return out;
+}
+
+/** Remove properties from schema that clash with path parameter names. */
+function removeClashingProps(schema, paramNames) {
+  if (!schema || typeof schema !== 'object' || !schema.properties) return schema;
+  const out = { ...schema, properties: { ...schema.properties } };
+  for (const name of paramNames) {
+    if (out.properties[name]) {
+      delete out.properties[name];
+    }
+  }
+  // Update required if needed
+  if (out.required) {
+    out.required = out.required.filter(f => out.properties[f]);
+    if (out.required.length === 0) delete out.required;
+  }
+  if (Object.keys(out.properties).length === 0) delete out.properties;
+  return out;
+}
+
 /** Extract a schema object safe for GPT Builder: no nulls, no malformed additionalProperties. */
 function cleanSchema(obj) {
   if (!obj || typeof obj !== 'object') return obj;
@@ -287,9 +343,22 @@ for (const { gptId, method, path, operation } of resolvedOps) {
         };
         bodySchema = bodySchemaRef;
       } else if (schema.$ref) {
-        bodySchema = { $ref: schema.$ref };
+        // For $ref request bodies: get the source schema, strip readOnly props,
+        // remove properties that clash with path params, then inline.
         const refName = schema.$ref.replace('#/components/schemas/', '');
-        usedRefs.add(refName);
+        const sourceSchema = spec.components?.schemas?.[refName];
+        if (sourceSchema) {
+          let cleaned = cleanSchema(sourceSchema);
+          cleaned = stripReadOnly(cleaned);
+          const pathParamNames = resolvedParams.filter(p => p.in === 'path').map(p => p.name);
+          if (pathParamNames.length > 0) {
+            cleaned = removeClashingProps(cleaned, pathParamNames);
+          }
+          bodySchema = cleaned;
+        } else {
+          usedRefs.add(refName);
+          bodySchema = { $ref: schema.$ref };
+        }
       } else {
         bodySchema = cleanSchema(schema);
       }

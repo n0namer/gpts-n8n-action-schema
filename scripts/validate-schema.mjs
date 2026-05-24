@@ -206,6 +206,40 @@ for (const [name, schema] of Object.entries(spec.components?.schemas || {})) {
 check('SCHEMA_REQUIRED_FIELD_TYPES', schemaPropTypeIssues.length === 0,
   schemaPropTypeIssues.length > 0 ? schemaPropTypeIssues.join('; ') : 'all required fields typed');
 
+// 17. No requestBody property clashes with path parameters for same operation
+let paramClashes = [];
+for (const { path, method, op } of allOps) {
+  const params = op.parameters || [];
+  const pathParamNames = params.filter(p => p.in === 'path').map(p => p.name);
+  if (pathParamNames.length === 0) continue;
+  const rb = op.requestBody;
+  if (!rb?.content?.['application/json']?.schema) continue;
+  const bodyProps = rb.content['application/json'].schema.properties || {};
+  for (const name of pathParamNames) {
+    if (bodyProps[name]) {
+      paramClashes.push(`${op.operationId}: path param "${name}" also in request body properties`);
+    }
+  }
+}
+check('NO_BODY_PARAM_CLASH', paramClashes.length === 0,
+  paramClashes.length > 0 ? paramClashes.join('; ') : 'no clashes');
+
+// 18. No readOnly properties in request body schemas
+let bodyReadOnly = [];
+for (const { path, method, op } of allOps) {
+  const rb = op.requestBody;
+  if (!rb?.content?.['application/json']?.schema) continue;
+  const s = rb.content['application/json'].schema;
+  const props = s.properties || {};
+  for (const [name, prop] of Object.entries(props)) {
+    if (prop && typeof prop === 'object' && prop.readOnly === true) {
+      bodyReadOnly.push(`${op.operationId}: requestBody property "${name}" is readOnly`);
+    }
+  }
+}
+check('NO_READONLY_IN_REQBODY', bodyReadOnly.length === 0,
+  bodyReadOnly.length > 0 ? bodyReadOnly.join('; ') : 'no readOnly properties');
+
 // ── Summary ─────────────────────────────────────────────────────────
 const passed = checks.filter(c => c.status === 'PASS').length;
 const failed = checks.filter(c => c.status === 'FAIL').length;
