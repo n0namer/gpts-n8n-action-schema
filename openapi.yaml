@@ -1,12 +1,12 @@
 openapi: 3.1.0
-info: {title: n8n REST Control API, version: 1.5.6-no-duplicate-id}
+info: {title: n8n REST Control API, version: 1.5.7-raw-n8n-rest}
 servers: [{url: https://n8n-control-production.up.railway.app/api/v1}]
 security: [{N8nApiKey: []}]
 paths:
   /workflows:
     get:
-      operationId: listWorkflowsMini
-      summary: listWorkflowsMini
+      operationId: listWorkflows
+      summary: listWorkflows
       x-openai-isConsequential: false
       parameters:
         - {name: limit, in: query, required: false, schema: {type: integer}}
@@ -17,9 +17,6 @@ paths:
       operationId: createWorkflow
       summary: createWorkflow
       x-openai-isConsequential: true
-      parameters:
-        - {name: limit, in: query, required: false, schema: {type: integer}}
-        - {name: cursor, in: query, required: false, schema: {type: string}}
       requestBody:
         required: false
         content:
@@ -51,6 +48,14 @@ paths:
               $ref: '#/components/schemas/BodyNoId'
       responses:
         '200': {$ref: '#/components/responses/AnyResponse'}
+    delete:
+      operationId: deleteWorkflow
+      summary: deleteWorkflow
+      x-openai-isConsequential: true
+      parameters:
+        - {name: id, in: path, required: true, schema: {type: string}}
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
   /workflows/{id}/activate:
     post:
       operationId: activateWorkflow
@@ -65,103 +70,6 @@ paths:
       operationId: deactivateWorkflow
       summary: deactivateWorkflow
       x-openai-isConsequential: true
-      parameters:
-        - {name: id, in: path, required: true, schema: {type: string}}
-      responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
-  /workflows/search:
-    get:
-      operationId: searchWorkflows
-      summary: searchWorkflows
-      x-openai-isConsequential: false
-      parameters:
-        - {name: q, in: query, required: false, schema: {type: string}}
-        - {name: limit, in: query, required: false, schema: {type: integer}}
-      responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
-  /workflows/{id}/clone:
-    post:
-      operationId: cloneWorkflow
-      summary: cloneWorkflow
-      x-openai-isConsequential: true
-      parameters:
-        - {name: id, in: path, required: true, schema: {type: string}}
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/BodyNoId'
-      responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
-  /workflows/validate:
-    post:
-      operationId: validateWorkflow
-      summary: validateWorkflow
-      x-openai-isConsequential: false
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/BodyNoId'
-      responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
-  /workflows/diff:
-    post:
-      operationId: diffWorkflows
-      summary: diffWorkflows
-      x-openai-isConsequential: false
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/BodyNoId'
-      responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
-  /workflows/{id}/patch:
-    post:
-      operationId: patchWorkflow
-      summary: patchWorkflow
-      x-openai-isConsequential: true
-      parameters:
-        - {name: id, in: path, required: true, schema: {type: string}}
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/BodyNoId'
-      responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
-  /workflows/{id}/export:
-    get:
-      operationId: exportWorkflow
-      summary: exportWorkflow
-      x-openai-isConsequential: false
-      parameters:
-        - {name: id, in: path, required: true, schema: {type: string}}
-      responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
-  /workflows/import:
-    post:
-      operationId: importWorkflow
-      summary: importWorkflow
-      x-openai-isConsequential: true
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/BodyNoId'
-      responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
-  /workflows/{id}/summary:
-    get:
-      operationId: summarizeWorkflow
-      summary: summarizeWorkflow
-      x-openai-isConsequential: false
       parameters:
         - {name: id, in: path, required: true, schema: {type: string}}
       responses:
@@ -185,19 +93,9 @@ paths:
         - {name: id, in: path, required: true, schema: {type: string}}
       responses:
         '200': {$ref: '#/components/responses/AnyResponse'}
-  /workflows/{id}/executions/recent:
-    get:
-      operationId: getRecentExecutionsForWorkflow
-      summary: getRecentExecutionsForWorkflow
-      x-openai-isConsequential: false
-      parameters:
-        - {name: id, in: path, required: true, schema: {type: string}}
-      responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
-  /executions/{id}/cancel:
-    post:
-      operationId: cancelExecution
-      summary: cancelExecution
+    delete:
+      operationId: deleteExecution
+      summary: deleteExecution
       x-openai-isConsequential: true
       parameters:
         - {name: id, in: path, required: true, schema: {type: string}}
@@ -207,6 +105,15 @@ paths:
     post:
       operationId: retryExecution
       summary: retryExecution
+      x-openai-isConsequential: true
+      parameters:
+        - {name: id, in: path, required: true, schema: {type: string}}
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
+  /executions/{id}/stop:
+    post:
+      operationId: stopExecution
+      summary: stopExecution
       x-openai-isConsequential: true
       parameters:
         - {name: id, in: path, required: true, schema: {type: string}}
@@ -231,6 +138,14 @@ paths:
         - {name: id, in: path, required: true, schema: {type: string}}
       responses:
         '200': {$ref: '#/components/responses/AnyResponse'}
+    delete:
+      operationId: deleteCredential
+      summary: deleteCredential
+      x-openai-isConsequential: true
+      parameters:
+        - {name: id, in: path, required: true, schema: {type: string}}
+      responses:
+        '200': {$ref: '#/components/responses/AnyResponse'}
   /credentials/schema/{credentialTypeName}:
     get:
       operationId: getCredentialSchema
@@ -238,15 +153,6 @@ paths:
       x-openai-isConsequential: false
       parameters:
         - {name: credentialTypeName, in: path, required: true, schema: {type: string}}
-      responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
-  /credentials/{id}/test:
-    post:
-      operationId: testCredential
-      summary: testCredential
-      x-openai-isConsequential: true
-      parameters:
-        - {name: id, in: path, required: true, schema: {type: string}}
       responses:
         '200': {$ref: '#/components/responses/AnyResponse'}
   /variables:
@@ -263,9 +169,6 @@ paths:
       operationId: createVariable
       summary: createVariable
       x-openai-isConsequential: true
-      parameters:
-        - {name: limit, in: query, required: false, schema: {type: integer}}
-        - {name: cursor, in: query, required: false, schema: {type: string}}
       requestBody:
         required: false
         content:
@@ -289,17 +192,12 @@ paths:
               $ref: '#/components/schemas/VariableBodyNoId'
       responses:
         '200': {$ref: '#/components/responses/AnyResponse'}
-  /audit:
-    post:
-      operationId: generateAudit
-      summary: generateAudit
-      x-openai-isConsequential: false
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/BodyNoId'
+    delete:
+      operationId: deleteVariable
+      summary: deleteVariable
+      x-openai-isConsequential: true
+      parameters:
+        - {name: id, in: path, required: true, schema: {type: string}}
       responses:
         '200': {$ref: '#/components/responses/AnyResponse'}
   /projects:
@@ -310,26 +208,6 @@ paths:
       parameters:
         - {name: limit, in: query, required: false, schema: {type: integer}}
         - {name: cursor, in: query, required: false, schema: {type: string}}
-      responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
-  /control/health:
-    get:
-      operationId: getControlHealth
-      summary: getControlHealth
-      x-openai-isConsequential: false
-      responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
-  /tasks/status:
-    post:
-      operationId: writeBackTaskStatus
-      summary: writeBackTaskStatus
-      x-openai-isConsequential: true
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TaskBodyNoId'
       responses:
         '200': {$ref: '#/components/responses/AnyResponse'}
 
@@ -357,10 +235,6 @@ components:
       additionalProperties: true
       properties:
         name: {type: string}
-        query: {type: string}
-        operation: {type: string}
-        data: {$ref: '#/components/schemas/Any'}
-        patch: {$ref: '#/components/schemas/Any'}
         nodes:
           type: array
           items: {$ref: '#/components/schemas/Any'}
@@ -375,11 +249,3 @@ components:
         value: {type: string}
         type: {type: string}
         projectId: {type: string}
-    TaskBodyNoId:
-      type: object
-      additionalProperties: false
-      properties:
-        requestId: {type: string}
-        status: {type: string}
-        evidence: {type: string}
-        message: {type: string}
