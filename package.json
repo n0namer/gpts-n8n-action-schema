@@ -1,0 +1,19 @@
+{
+  "name": "gpts-n8n-action-schema",
+  "version": "1.5.8",
+  "private": true,
+  "description": "GPT-compatible OpenAPI schema generator for n8n REST API control",
+  "type": "module",
+  "scripts": {
+    "generate": "node scripts/generate-gpt-actions-schema.mjs",
+    "validate": "node scripts/validate-schema.mjs",
+    "test": "npm run generate && npm run validate",
+    "precommit": "npm test"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

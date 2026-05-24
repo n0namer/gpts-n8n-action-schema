@@ -1,251 +1,662 @@
 openapi: 3.1.0
-info: {title: n8n REST Control API, version: 1.5.7-raw-n8n-rest}
-servers: [{url: https://n8n-control-production.up.railway.app/api/v1}]
-security: [{N8nApiKey: []}]
+info:
+  title: n8n REST Control API
+  version: 1.5.8-generated-allowlist
+  description: >-
+    GPT-compatible OpenAPI schema for n8n workflow and resource management via n8n-control proxy. Generated from native
+    n8n OpenAPI snapshot with allowlist.
+servers:
+  - url: https://n8n-control-production.up.railway.app/api/v1
+security:
+  - N8nApiKey: []
+components:
+  securitySchemes:
+    N8nApiKey:
+      type: apiKey
+      in: header
+      name: X-N8N-API-KEY
+      description: >-
+        n8n API key from Settings > API (not OpenClaw/operator key). Must be a valid n8n API key with appropriate
+        scopes.
+  schemas:
+    workflow:
+      type: object
+      additionalProperties: null
+      required:
+        - name
+        - nodes
+        - connections
+        - settings
+      properties:
+        description:
+          type: string
+          description: Description of the workflow
+          example: My workflow description
+    variable.create:
+      type: object
+      additionalProperties: null
+      required:
+        - key
+        - value
+      properties:
+        type:
+          type: string
+          readOnly: true
 paths:
   /workflows:
     get:
       operationId: listWorkflows
       summary: listWorkflows
-      x-openai-isConsequential: false
+      description: Retrieve all workflows from your instance.
+      tags:
+        - Workflow
       parameters:
-        - {name: limit, in: query, required: false, schema: {type: integer}}
-        - {name: cursor, in: query, required: false, schema: {type: string}}
+        - name: active
+          in: query
+          required: false
+          description: ""
+          schema:
+            type: boolean
+            example: true
+        - name: tags
+          in: query
+          required: false
+          description: ""
+          schema:
+            type: string
+            example: test,production
+        - name: name
+          in: query
+          required: false
+          description: ""
+          schema:
+            type: string
+            example: My Workflow
+        - name: projectId
+          in: query
+          required: false
+          description: ""
+          schema:
+            type: string
+            example: VmwOO9HeTEj20kxM
+        - name: excludePinnedData
+          in: query
+          required: false
+          description: Set this to avoid retrieving pinned data
+          schema:
+            type: boolean
+            example: true
+        - required: false
+          description: ""
+          schema:
+            type: string
+        - required: false
+          description: ""
+          schema:
+            type: string
       responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
+        "200":
+          description: Success
+        "401":
+          description: Unauthorized
     post:
       operationId: createWorkflow
       summary: createWorkflow
+      description: Create a workflow in your instance.
+      tags:
+        - Workflow
+      parameters: []
+      responses:
+        "200":
+          description: Success
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
       x-openai-isConsequential: true
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BodyNoId'
-      responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
+              type: object
+              description: >-
+                Always send complete n8n workflow payload. Never omit nodes, connections, or settings. Never send only
+                name. Use Manual Trigger node for safe draft workflows.
+              required:
+                - name
+                - nodes
+                - connections
+                - settings
+              additionalProperties: false
+              properties:
+                name:
+                  type: string
+                  description: Workflow name (required)
+                nodes:
+                  type: array
+                  description: Workflow nodes/operations (required, at least one node)
+                  items:
+                    type: object
+                  minItems: 1
+                connections:
+                  type: object
+                  description: Connections between nodes (required, can be empty {})
+                  additionalProperties: true
+                settings:
+                  type: object
+                  description: Workflow settings (required, can be empty {})
+                  additionalProperties: true
+              example:
+                name: Draft Workflow
+                nodes:
+                  - id: manual-trigger
+                    name: Manual Trigger
+                    type: n8n-nodes-base.manualTrigger
+                    typeVersion: 1
+                    position:
+                      - 0
+                      - 0
+                    parameters: {}
+                connections: {}
+                settings: {}
   /workflows/{id}:
     get:
       operationId: getWorkflow
       summary: getWorkflow
-      x-openai-isConsequential: false
+      description: Retrieve a workflow.
+      tags:
+        - Workflow
       parameters:
-        - {name: id, in: path, required: true, schema: {type: string}}
+        - name: excludePinnedData
+          in: query
+          required: false
+          description: Set this to avoid retrieving pinned data
+          schema:
+            type: boolean
+            example: true
+        - required: false
+          description: ""
+          schema:
+            type: string
       responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
+        "200":
+          description: Success
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
     put:
       operationId: updateWorkflow
       summary: updateWorkflow
-      x-openai-isConsequential: true
+      description: Update a workflow. If the workflow is published, the updated version will be automatically re-published.
+      tags:
+        - Workflow
       parameters:
-        - {name: id, in: path, required: true, schema: {type: string}}
+        - required: false
+          description: ""
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
+      x-openai-isConsequential: true
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BodyNoId'
-      responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
+              $ref: "#/components/schemas/workflow"
     delete:
       operationId: deleteWorkflow
       summary: deleteWorkflow
-      x-openai-isConsequential: true
+      description: Delete a workflow.
+      tags:
+        - Workflow
       parameters:
-        - {name: id, in: path, required: true, schema: {type: string}}
+        - required: false
+          description: ""
+          schema:
+            type: string
       responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
+        "200":
+          description: Success
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
+      x-openai-isConsequential: true
   /workflows/{id}/activate:
     post:
       operationId: activateWorkflow
       summary: activateWorkflow
-      x-openai-isConsequential: true
+      description: Publish a workflow. In n8n v1, this action was termed activating a workflow.
+      tags:
+        - Workflow
       parameters:
-        - {name: id, in: path, required: true, schema: {type: string}}
+        - required: false
+          description: ""
+          schema:
+            type: string
       responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
+        "200":
+          description: Success
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
+      x-openai-isConsequential: true
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                  description: Optional description for the workflow version during activation.
   /workflows/{id}/deactivate:
     post:
       operationId: deactivateWorkflow
       summary: deactivateWorkflow
-      x-openai-isConsequential: true
+      description: Deactivate a workflow.
+      tags:
+        - Workflow
       parameters:
-        - {name: id, in: path, required: true, schema: {type: string}}
+        - required: false
+          description: ""
+          schema:
+            type: string
       responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
+        "200":
+          description: Success
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
+      x-openai-isConsequential: true
   /executions:
     get:
       operationId: listExecutions
       summary: listExecutions
-      x-openai-isConsequential: false
+      description: Retrieve all executions from your instance.
+      tags:
+        - Execution
       parameters:
-        - {name: limit, in: query, required: false, schema: {type: integer}}
-        - {name: cursor, in: query, required: false, schema: {type: string}}
+        - required: false
+          description: ""
+          schema:
+            type: string
+        - required: false
+          description: ""
+          schema:
+            type: string
+        - name: status
+          in: query
+          required: false
+          description: Status to filter the executions by.
+          schema:
+            type: string
+            enum:
+              - canceled
+              - crashed
+              - error
+              - new
+              - running
+              - success
+              - unknown
+              - waiting
+        - name: workflowId
+          in: query
+          required: false
+          description: Workflow to filter the executions by.
+          schema:
+            type: string
+            example: "1000"
+        - name: projectId
+          in: query
+          required: false
+          description: ""
+          schema:
+            type: string
+            example: VmwOO9HeTEj20kxM
+        - required: false
+          description: ""
+          schema:
+            type: string
+        - required: false
+          description: ""
+          schema:
+            type: string
       responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
+        "200":
+          description: Success
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
   /executions/{id}:
     get:
       operationId: getExecution
       summary: getExecution
-      x-openai-isConsequential: false
+      description: Retrieve an execution from your instance.
+      tags:
+        - Execution
       parameters:
-        - {name: id, in: path, required: true, schema: {type: string}}
+        - required: false
+          description: ""
+          schema:
+            type: string
+        - required: false
+          description: ""
+          schema:
+            type: string
+        - required: false
+          description: ""
+          schema:
+            type: string
       responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
+        "200":
+          description: Success
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
     delete:
       operationId: deleteExecution
       summary: deleteExecution
-      x-openai-isConsequential: true
+      description: Deletes an execution from your instance.
+      tags:
+        - Execution
       parameters:
-        - {name: id, in: path, required: true, schema: {type: string}}
+        - required: false
+          description: ""
+          schema:
+            type: string
       responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
+        "200":
+          description: Success
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
+      x-openai-isConsequential: true
   /executions/{id}/retry:
     post:
       operationId: retryExecution
       summary: retryExecution
-      x-openai-isConsequential: true
+      description: Retry an execution from your instance.
+      tags:
+        - Execution
       parameters:
-        - {name: id, in: path, required: true, schema: {type: string}}
+        - required: false
+          description: ""
+          schema:
+            type: string
       responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
+        "200":
+          description: Success
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
+      x-openai-isConsequential: true
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: null
   /executions/{id}/stop:
     post:
       operationId: stopExecution
       summary: stopExecution
-      x-openai-isConsequential: true
+      description: Stop an execution by id.
+      tags:
+        - Execution
       parameters:
-        - {name: id, in: path, required: true, schema: {type: string}}
+        - required: false
+          description: ""
+          schema:
+            type: string
       responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
+        "200":
+          description: Success
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
+      x-openai-isConsequential: true
   /credentials:
     get:
       operationId: listCredentials
       summary: listCredentials
-      x-openai-isConsequential: false
+      description: >-
+        Retrieve all credentials from your instance. Only available for the instance owner and admin. Credential data
+        (secrets) is not included.
+      tags:
+        - Credential
       parameters:
-        - {name: limit, in: query, required: false, schema: {type: integer}}
-        - {name: cursor, in: query, required: false, schema: {type: string}}
+        - required: false
+          description: ""
+          schema:
+            type: string
+        - required: false
+          description: ""
+          schema:
+            type: string
       responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
+        "200":
+          description: Success
+        "401":
+          description: Unauthorized
   /credentials/{id}:
     get:
       operationId: getCredential
       summary: getCredential
-      x-openai-isConsequential: false
+      description: Retrieves a credential by ID. Credential data (secrets) is not included.
+      tags:
+        - Credential
       parameters:
-        - {name: id, in: path, required: true, schema: {type: string}}
+        - name: id
+          in: path
+          required: true
+          description: The credential ID
+          schema:
+            type: string
       responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
+        "200":
+          description: Success
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
     delete:
       operationId: deleteCredential
       summary: deleteCredential
-      x-openai-isConsequential: true
+      description: Deletes a credential from your instance. You must be the owner of the credentials
+      tags:
+        - Credential
       parameters:
-        - {name: id, in: path, required: true, schema: {type: string}}
+        - name: id
+          in: path
+          required: true
+          description: The credential ID that needs to be deleted
+          schema:
+            type: string
       responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
+        "200":
+          description: Success
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
+      x-openai-isConsequential: true
   /credentials/schema/{credentialTypeName}:
     get:
       operationId: getCredentialSchema
       summary: getCredentialSchema
-      x-openai-isConsequential: false
+      description: Show credential data schema
+      tags:
+        - Credential
       parameters:
-        - {name: credentialTypeName, in: path, required: true, schema: {type: string}}
+        - name: credentialTypeName
+          in: path
+          required: true
+          description: The credential type name that you want to get the schema for
+          schema:
+            type: string
       responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
+        "200":
+          description: Success
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
   /variables:
     get:
       operationId: listVariables
       summary: listVariables
-      x-openai-isConsequential: false
+      description: Retrieve variables from your instance.
+      tags:
+        - Variables
       parameters:
-        - {name: limit, in: query, required: false, schema: {type: integer}}
-        - {name: cursor, in: query, required: false, schema: {type: string}}
+        - required: false
+          description: ""
+          schema:
+            type: string
+        - required: false
+          description: ""
+          schema:
+            type: string
+        - name: projectId
+          in: query
+          required: false
+          description: ""
+          schema:
+            type: string
+            example: VmwOO9HeTEj20kxM
+        - name: state
+          in: query
+          required: false
+          description: ""
+          schema:
+            type: string
+            enum:
+              - empty
       responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
+        "200":
+          description: Success
+        "401":
+          description: Unauthorized
     post:
       operationId: createVariable
       summary: createVariable
+      description: Create a variable in your instance.
+      tags:
+        - Variables
+      parameters: []
+      responses:
+        "200":
+          description: Success
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
       x-openai-isConsequential: true
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/VariableBodyNoId'
-      responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
+              $ref: "#/components/schemas/variable.create"
   /variables/{id}:
     put:
       operationId: updateVariable
       summary: updateVariable
-      x-openai-isConsequential: true
+      description: Update a variable from your instance.
+      tags:
+        - Variables
       parameters:
-        - {name: id, in: path, required: true, schema: {type: string}}
+        - required: false
+          description: ""
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+      x-openai-isConsequential: true
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/VariableBodyNoId'
-      responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
+              $ref: "#/components/schemas/variable.create"
     delete:
       operationId: deleteVariable
       summary: deleteVariable
-      x-openai-isConsequential: true
+      description: Delete a variable from your instance.
+      tags:
+        - Variables
       parameters:
-        - {name: id, in: path, required: true, schema: {type: string}}
+        - required: false
+          description: ""
+          schema:
+            type: string
       responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
+        "200":
+          description: Success
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
+      x-openai-isConsequential: true
   /projects:
     get:
       operationId: listProjects
       summary: listProjects
-      x-openai-isConsequential: false
+      description: Retrieve projects from your instance.
+      tags:
+        - Projects
       parameters:
-        - {name: limit, in: query, required: false, schema: {type: integer}}
-        - {name: cursor, in: query, required: false, schema: {type: string}}
+        - required: false
+          description: ""
+          schema:
+            type: string
+        - required: false
+          description: ""
+          schema:
+            type: string
       responses:
-        '200': {$ref: '#/components/responses/AnyResponse'}
-
-components:
-  securitySchemes:
-    N8nApiKey: {type: apiKey, in: header, name: X-N8N-API-KEY}
-  responses:
-    AnyResponse:
-      description: OK
-      content:
-        application/json:
-          schema: {$ref: '#/components/schemas/Any'}
-  schemas:
-    Any:
-      type: object
-      additionalProperties: true
-      properties:
-        ok: {type: boolean}
-        success: {type: boolean}
-        error: {type: string}
-        message: {type: string}
-        workflowId: {type: string}
-    BodyNoId:
-      type: object
-      additionalProperties: true
-      properties:
-        name: {type: string}
-        nodes:
-          type: array
-          items: {$ref: '#/components/schemas/Any'}
-        connections: {$ref: '#/components/schemas/Any'}
-        settings: {$ref: '#/components/schemas/Any'}
-        versionId: {type: string}
-    VariableBodyNoId:
-      type: object
-      additionalProperties: false
-      properties:
-        key: {type: string}
-        value: {type: string}
-        type: {type: string}
-        projectId: {type: string}
+        "200":
+          description: Success
+        "401":
+          description: Unauthorized

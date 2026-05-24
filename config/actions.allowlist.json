@@ -1,0 +1,48 @@
+{
+  "_comment": "GPT Actions allowlist for n8n REST API. Max 30 operationIds.",
+  "max_operations": 30,
+  "include_operation_ids": [
+    "listWorkflows",
+    "createWorkflow",
+    "getWorkflow",
+    "updateWorkflow",
+    "deleteWorkflow",
+    "activateWorkflow",
+    "deactivateWorkflow",
+    "listExecutions",
+    "getExecution",
+    "deleteExecution",
+    "retryExecution",
+    "stopExecution",
+    "listCredentials",
+    "getCredential",
+    "deleteCredential",
+    "getCredentialSchema",
+    "listVariables",
+    "createVariable",
+    "updateVariable",
+    "deleteVariable",
+    "listProjects"
+  ],
+  "forbidden_operation_ids": [
+    "searchWorkflows",
+    "cloneWorkflow",
+    "importWorkflow",
+    "patchWorkflow",
+    "exportWorkflow",
+    "summarizeWorkflow",
+    "diffWorkflows",
+    "validateWorkflow",
+    "getControlHealth",
+    "writeBackTaskStatus",
+    "generateAudit"
+  ],
+  "source_to_gpt_operation_id_map": {
+    "getWorkflows": "listWorkflows",
+    "getExecutions": "listExecutions",
+    "getCredentials": "listCredentials",
+    "getVariables": "listVariables",
+    "getProjects": "listProjects",
+    "getCredentialType": "getCredentialSchema"
+  }
+}
