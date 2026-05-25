@@ -6,5 +6,6 @@ export const stringify = (input, options = {}) => yaml.dump(input, {
   noCompatMode: true,
   quotingType: '"',
   forceQuotes: false,
+  noRefs: true,
   ...options,
 });
