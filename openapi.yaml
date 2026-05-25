@@ -16,11 +16,7 @@ components:
       description: >-
         n8n API key from Settings > API (not OpenClaw/operator key). Must be a valid n8n API key with appropriate
         scopes.
-  schemas:
-    AnyResponse:
-      type: object
-      additionalProperties: true
-      description: Generic JSON response from the n8n API.
+  schemas: {}
 paths:
   /workflows:
     get:
@@ -85,13 +81,60 @@ paths:
       responses:
         "200":
           description: Success
-          content: &ref_0
+          content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AnyResponse"
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "401":
           description: Unauthorized
-          content: *ref_0
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
     post:
       operationId: createWorkflow
       summary: createWorkflow
@@ -102,22 +145,144 @@ paths:
       responses:
         "200":
           description: Success
-          content: &ref_1
+          content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AnyResponse"
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "400":
           description: Bad Request
-          content: *ref_1
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "401":
           description: Unauthorized
-          content: *ref_1
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "403":
           description: Forbidden
-          content: *ref_1
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "404":
           description: Not Found
-          content: *ref_1
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
       x-openai-isConsequential: true
       requestBody:
         required: true
@@ -189,16 +354,88 @@ paths:
       responses:
         "200":
           description: Success
-          content: &ref_2
+          content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AnyResponse"
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "401":
           description: Unauthorized
-          content: *ref_2
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "404":
           description: Not Found
-          content: *ref_2
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
     put:
       operationId: updateWorkflow
       summary: updateWorkflow
@@ -215,19 +452,116 @@ paths:
       responses:
         "200":
           description: Success
-          content: &ref_3
+          content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AnyResponse"
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "400":
           description: Bad Request
-          content: *ref_3
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "401":
           description: Unauthorized
-          content: *ref_3
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "404":
           description: Not Found
-          content: *ref_3
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
       x-openai-isConsequential: true
       requestBody:
         required: true
@@ -276,16 +610,88 @@ paths:
       responses:
         "200":
           description: Success
-          content: &ref_4
+          content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AnyResponse"
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "401":
           description: Unauthorized
-          content: *ref_4
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "404":
           description: Not Found
-          content: *ref_4
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
       x-openai-isConsequential: true
   /workflows/{id}/activate:
     post:
@@ -304,19 +710,116 @@ paths:
       responses:
         "200":
           description: Success
-          content: &ref_5
+          content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AnyResponse"
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "400":
           description: Bad Request
-          content: *ref_5
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "401":
           description: Unauthorized
-          content: *ref_5
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "404":
           description: Not Found
-          content: *ref_5
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
       x-openai-isConsequential: true
       requestBody:
         required: false
@@ -351,16 +854,88 @@ paths:
       responses:
         "200":
           description: Success
-          content: &ref_6
+          content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AnyResponse"
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "401":
           description: Unauthorized
-          content: *ref_6
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "404":
           description: Not Found
-          content: *ref_6
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
       x-openai-isConsequential: true
   /executions:
     get:
@@ -434,19 +1009,116 @@ paths:
       responses:
         "200":
           description: Success
-          content: &ref_7
+          content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AnyResponse"
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "401":
           description: Unauthorized
-          content: *ref_7
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "403":
           description: Forbidden
-          content: *ref_7
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "404":
           description: Not Found
-          content: *ref_7
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
   /executions/{id}:
     get:
       operationId: getExecution
@@ -479,19 +1151,116 @@ paths:
       responses:
         "200":
           description: Success
-          content: &ref_8
+          content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AnyResponse"
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "401":
           description: Unauthorized
-          content: *ref_8
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "403":
           description: Forbidden
-          content: *ref_8
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "404":
           description: Not Found
-          content: *ref_8
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
     delete:
       operationId: deleteExecution
       summary: deleteExecution
@@ -508,16 +1277,88 @@ paths:
       responses:
         "200":
           description: Success
-          content: &ref_9
+          content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AnyResponse"
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "401":
           description: Unauthorized
-          content: *ref_9
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "404":
           description: Not Found
-          content: *ref_9
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
       x-openai-isConsequential: true
   /executions/{id}/retry:
     post:
@@ -536,16 +1377,88 @@ paths:
       responses:
         "200":
           description: Success
-          content: &ref_10
+          content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AnyResponse"
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "401":
           description: Unauthorized
-          content: *ref_10
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "404":
           description: Not Found
-          content: *ref_10
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
       x-openai-isConsequential: true
       requestBody:
         required: false
@@ -576,16 +1489,88 @@ paths:
       responses:
         "200":
           description: Success
-          content: &ref_11
+          content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AnyResponse"
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "401":
           description: Unauthorized
-          content: *ref_11
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "404":
           description: Not Found
-          content: *ref_11
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
       x-openai-isConsequential: true
   /credentials:
     get:
@@ -617,13 +1602,60 @@ paths:
       responses:
         "200":
           description: Success
-          content: &ref_12
+          content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AnyResponse"
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "401":
           description: Unauthorized
-          content: *ref_12
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
   /credentials/{id}:
     get:
       operationId: getCredential
@@ -641,19 +1673,116 @@ paths:
       responses:
         "200":
           description: Success
-          content: &ref_13
+          content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AnyResponse"
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "401":
           description: Unauthorized
-          content: *ref_13
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "403":
           description: Forbidden
-          content: *ref_13
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "404":
           description: Not Found
-          content: *ref_13
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
     delete:
       operationId: deleteCredential
       summary: deleteCredential
@@ -670,16 +1799,88 @@ paths:
       responses:
         "200":
           description: Success
-          content: &ref_14
+          content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AnyResponse"
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "401":
           description: Unauthorized
-          content: *ref_14
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "404":
           description: Not Found
-          content: *ref_14
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
       x-openai-isConsequential: true
   /credentials/schema/{credentialTypeName}:
     get:
@@ -698,16 +1899,88 @@ paths:
       responses:
         "200":
           description: Success
-          content: &ref_15
+          content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AnyResponse"
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "401":
           description: Unauthorized
-          content: *ref_15
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "404":
           description: Not Found
-          content: *ref_15
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
   /variables:
     get:
       operationId: listVariables
@@ -751,13 +2024,60 @@ paths:
       responses:
         "200":
           description: Success
-          content: &ref_16
+          content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AnyResponse"
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "401":
           description: Unauthorized
-          content: *ref_16
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
     post:
       operationId: createVariable
       summary: createVariable
@@ -768,16 +2088,88 @@ paths:
       responses:
         "200":
           description: Success
-          content: &ref_17
+          content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AnyResponse"
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "400":
           description: Bad Request
-          content: *ref_17
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "401":
           description: Unauthorized
-          content: *ref_17
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
       x-openai-isConsequential: true
       requestBody:
         required: true
@@ -816,22 +2208,144 @@ paths:
       responses:
         "200":
           description: Success
-          content: &ref_18
+          content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AnyResponse"
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "400":
           description: Bad Request
-          content: *ref_18
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "401":
           description: Unauthorized
-          content: *ref_18
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "403":
           description: Forbidden
-          content: *ref_18
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "404":
           description: Not Found
-          content: *ref_18
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
       x-openai-isConsequential: true
       requestBody:
         required: true
@@ -869,16 +2383,88 @@ paths:
       responses:
         "200":
           description: Success
-          content: &ref_19
+          content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AnyResponse"
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "401":
           description: Unauthorized
-          content: *ref_19
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "404":
           description: Not Found
-          content: *ref_19
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
       x-openai-isConsequential: true
   /projects:
     get:
@@ -908,13 +2494,60 @@ paths:
       responses:
         "200":
           description: Success
-          content: &ref_20
+          content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AnyResponse"
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "401":
           description: Unauthorized
-          content: *ref_20
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
   /audit:
     post:
       operationId: generateAudit
@@ -926,13 +2559,60 @@ paths:
       responses:
         "200":
           description: Success
-          content: &ref_21
+          content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AnyResponse"
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
         "401":
           description: Unauthorized
-          content: *ref_21
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Raw JSON response from n8n API. Shape depends on endpoint.
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  ok:
+                    type: boolean
+                  deleted:
+                    type: boolean
       x-openai-isConsequential: true
       requestBody:
         required: false

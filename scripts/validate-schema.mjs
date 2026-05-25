@@ -173,7 +173,42 @@ for (const ref of refMatches) {
 check('NO_EXTERNAL_REF', extRefs.length === 0,
   extRefs.length > 0 ? `EXTERNAL: ${extRefs.join(', ')}` : `${allRefs.length} internal refs only`);
 
-// ── NEW CHECKS ──────────────────────────────────────────────────────
+// ── AnyResponse / $ref / anchor bans ───────────────────────────────-
+
+// 20. No AnyResponse in raw YAML
+const anyResponseMatches = rawYaml.match(/AnyResponse/g) || [];
+check('NO_ANY_RESPONSE', anyResponseMatches.length === 0,
+  anyResponseMatches.length > 0 ? `FOUND ${anyResponseMatches.length} occurrences` : 'clean');
+
+// 21. No $ref in any response schema
+let responseRefs = [];
+for (const { path, method, op } of allOps) {
+  for (const [code, resp] of Object.entries(op.responses || {})) {
+    const schema = resp?.content?.['application/json']?.schema;
+    if (schema && schema.$ref) {
+      responseRefs.push(`${op.operationId} (${code}): $ref in response`);
+    }
+  }
+}
+check('NO_REF_IN_RESPONSES', responseRefs.length === 0,
+  responseRefs.length > 0 ? responseRefs.join('; ') : 'no $ref in any response');
+
+// 22. No YAML anchors/aliases (&ref_ or *ref_)
+const anchorMatches = rawYaml.match(/&ref_|\*ref_/g) || [];
+check('NO_YAML_ANCHORS', anchorMatches.length === 0,
+  anchorMatches.length > 0 ? `FOUND ${anchorMatches.length} occurrences` : 'clean');
+
+// 23. components.schemas: if non-empty, every schema must have properties
+let schemasWithoutProps = [];
+for (const [name, schema] of Object.entries(spec.components?.schemas || {})) {
+  if (schema && typeof schema === 'object' && !schema.properties && !schema.additionalProperties && !schema.type?.startsWith?.('array')) {
+    schemasWithoutProps.push(`${name}: no properties`);
+  }
+}
+check('SCHEMAS_HAVE_PROPERTIES', schemasWithoutProps.length === 0,
+  schemasWithoutProps.length > 0 ? schemasWithoutProps.join('; ') : 'all non-empty schemas have properties (or schemas is empty)');
+
+// ── NEW CHECKS (continued) ──────────────────────────────────────────
 
 // 14. No additionalProperties: null or properties: null in raw YAML
 const nullAddProps = rawYaml.match(/additionalProperties:\s*null/g) || [];

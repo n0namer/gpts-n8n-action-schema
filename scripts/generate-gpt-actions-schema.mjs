@@ -195,6 +195,24 @@ function extractPathTemplateNames(path) {
 const usedRefs = new Set();
 const outputPaths = {};
 
+/** Factory: deep-clone an inline response schema for each response, no $ref. */
+function makeInlineResponseSchema() {
+  return {
+    type: 'object',
+    description: 'Raw JSON response from n8n API. Shape depends on endpoint.',
+    properties: {
+      id: { type: 'string' },
+      name: { type: 'string' },
+      data: { type: 'array', items: { type: 'object', properties: {} } },
+      nextCursor: { type: 'string', nullable: true },
+      message: { type: 'string' },
+      error: { type: 'string' },
+      ok: { type: 'boolean' },
+      deleted: { type: 'boolean' },
+    },
+  };
+}
+
 // ── Process each operation ──────────────────────────────────────────
 for (const { gptId, method, path, operation } of resolvedOps) {
   const outputOp = {
@@ -371,23 +389,26 @@ for (const { gptId, method, path, operation } of resolvedOps) {
   }
 
   // ── Responses ─────────────────────────────────────────────────────
-  // Every response includes content JSON schema so GPT Actions returns raw body
-  const responseContent = {
-    content: {
-      'application/json': {
-        schema: { $ref: '#/components/schemas/AnyResponse' },
+  // Every response gets INLINE schema with explicit properties, no $ref, no AnyResponse.
+  // Factory returns a fresh deep-cloned object per call to avoid js-yaml anchors.
+  function freshResponseContent() {
+    return {
+      content: {
+        'application/json': {
+          schema: makeInlineResponseSchema(),
+        },
       },
-    },
-  };
+    };
+  }
 
   outputOp.responses = {
-    '200': { description: 'Success', ...responseContent },
+    '200': { description: 'Success', ...freshResponseContent() },
   };
   for (const code of ['400', '401', '403', '404']) {
     if (operation.responses?.[code]) {
       outputOp.responses[code] = {
         description: code === '400' ? 'Bad Request' : code === '401' ? 'Unauthorized' : code === '403' ? 'Forbidden' : 'Not Found',
-        ...responseContent,
+        ...freshResponseContent(),
       };
     }
   }
@@ -419,13 +440,7 @@ for (const [name, schema] of Object.entries(outputSchemas)) {
   }
 }
 
-// ── Always add AnyResponse schema for response bodies ─────────────
-// GPT Actions requires content JSON schema in responses to return raw body
-outputSchemas.AnyResponse = {
-  type: 'object',
-  additionalProperties: true,
-  description: 'Generic JSON response from the n8n API.',
-};
+// AnyResponse is REMOVED — every response now has inline schema with explicit properties.
 
 // ── Assemble ────────────────────────────────────────────────────────
 const output = {
